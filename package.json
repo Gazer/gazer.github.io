@@ -13,6 +13,8 @@
     "@astrojs/mdx": "^2.0.0",
     "@astrojs/rss": "^4.0.1",
     "@astrojs/sitemap": "^3.0.3",
-    "astro": "^4.0.3"
+    "astro": "^4.0.3",
+    "astro-auto-import": "^0.4.2",
+    "unist-util-select": "^5.1.0"
   }
 }

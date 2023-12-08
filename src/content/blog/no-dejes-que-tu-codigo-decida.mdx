@@ -15,7 +15,7 @@ El problema con tener condicionales es que nos genera caminos alternos; cada cam
 
 Hoy estábamos agregando sonidos a [Jumping Code](https://itunes.apple.com/us/app/jumping-cody/id1156598086?mt=8) para Android, juego que estamos desarrollando en [PatagonianTech](https://twitter.com/patagoniantech) y en uno de los _pulls_ viene el siguiente código :
 
-https://gist.github.com/Gazer/d106ad38b4cd858f279f9aac5a0f586d
+<script src="https://gist.github.com/Gazer/d106ad38b4cd858f279f9aac5a0f586d.js"></script>
 
 Cada vez que saltamos, reproducimos el sonido correspondiente. Pero como somos bueno, dejamos que el usuario pueda prender y apagar el sonido a gusto, porque hay momentos en que uno quiere jugar en silencio :).
 
@@ -28,25 +28,25 @@ La solución más elegante, que a mi me gusta aplicar, en estos casos es utiliza
 
 En este caso, como estamos con Java en Android, vamos a usar una interfaz para definir al manager genérico :
 
-https://gist.github.com/Gazer/f128117877b82598b52b04d4f411bfdd
+<script src="https://gist.github.com/Gazer/f128117877b82598b52b04d4f411bfdd.js"></script>
 
 Ahora, si queremos reescribir el fragmento original simplemente tenemos que utilizar un _SoundManager_ que nos será dado de alguna manera a determinar :
 
-https://gist.github.com/Gazer/372616b12db49bc3263cc35349e8f060
+<script src="https://gist.github.com/Gazer/372616b12db49bc3263cc35349e8f060.js"></script>
 
 Si tenemos 10 sonidos, vamos a cambiar 40 líneas de código que contienen if’s, llaves y condiciones por 10 simples llamadas a métodos. Es difícil negar lo útil de esta abstracción :).
 
 Para implementar el _loud manager_ (el que hace ruidos, digamos) podemos hacerlo bien simple reutilizando lo que ya teníamos inicialmente :
 
-https://gist.github.com/Gazer/d405575ef50fee624b0730c830dc8b87
+<script src="https://gist.github.com/Gazer/d405575ef50fee624b0730c830dc8b87.js"></script>
 
 Para cuando no tenemos sonido, podríamos decir que _SoundManager_ es `null` lo cual es tan malo como el caso inicial, porque tenemos que hacer el `if` de todos modos y peor aún porque si nos olvidemos estamos en un potencial `NPE` . Es por eso que lo mejor es aplicar el “[Null Object Pattern](https://en.wikipedia.org/wiki/Null_Object_pattern)”, que básicamente consiste en tener una implementación de la interfaz que no haga nada :
 
-https://gist.github.com/Gazer/5c221c5ed446c026b69647836b2dbec0
+<script src="https://gist.github.com/Gazer/5c221c5ed446c026b69647836b2dbec0.js"></script>
 
 Por último lo que necesitamos es una manera de obtener el manager correcto según las preferencias del usuario. Podemos hacer algo muy complicado o tener simplemente un “[Factory Method](https://es.wikipedia.org/wiki/Factory_Method_%28patr%C3%B3n_de_dise%C3%B1o%29)” en algún lugar :
 
-https://gist.github.com/Gazer/1ae044ff0a6ec9e2bbea9285b2a8e2d1
+<script src="https://gist.github.com/Gazer/1ae044ff0a6ec9e2bbea9285b2a8e2d1.js"></script>
 
 Este ejemplo es muy simple, pero multiplicado por cada decisión que hacemos o que dejamos hacer al código, termina en códigos que son difíciles de probar, tanto manual como automáticamente y poco agradables a la vista.
 

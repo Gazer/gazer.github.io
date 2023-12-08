@@ -17,7 +17,7 @@ El otro día estaba haciendo un _review_ a uno de mis compañeros, el código no
 
 El fragmento de código en cuestión es el siguiente :
 
-https://gist.github.com/Gazer/e12f6935bbdf405a97d5b045ff510544
+<script src="https://gist.github.com/Gazer/e12f6935bbdf405a97d5b045ff510544.js"></script>
 
 En la primera pasada no acote nada, pero luego de estar dando vueltas un rato por mi cabeza, algo comenzó a hacer ruido.
 
@@ -67,7 +67,7 @@ Si miramos bien el código, el programa anterior se trata de transformar una lis
 
 La respuesta correcta es la segunda, ya que aplicamos el “_Principio de responsabilidad única_“. Lo más razonable es pasar la lógica para calcular la unidad a la clase `Exercise`. El primer refactor nos deja el código como sigue :
 
-https://gist.github.com/Gazer/b4f126a5a193577af089ca04fe1035e5
+<script src="https://gist.github.com/Gazer/b4f126a5a193577af089ca04fe1035e5.js"></script>
 
 El bloque que realiza la conversión se ve mucho más limpio ahora. Y es más fácil de revisar a simple vista si hay algún error. Además podemos probar con mayor claridad que la detección de la unidad de un ejercicio sea correcta y hasta podríamos agregar pruebas automatizados para prevenir errores futuros. También si analizamos la complejidad ciclomática de cada método por separado encontraríamos una disminución de esta métrica, siendo algo positivo.
 
@@ -75,11 +75,11 @@ La “_Ley de Demeter_” por su lado nos dice que debemos tener ‘bajo acople�
 
 Para lograr bajo acople lo que debemos hacer es nunca saltear al intermediario, aun si eso hace que tengamos un método como “proxy”. En este caso la idea seria llamar simplemente a `exerciseEntry.unit()` quedando el código de la siguiente manera :
 
-https://gist.github.com/Gazer/b73eaed7a0fd98091651e393feaf1faa
+<script src="https://gist.github.com/Gazer/b73eaed7a0fd98091651e393feaf1faa.js"></script>
 
 Con un poco de magia de Groovy podemos dejar las cosas un poquito más organizadas :
 
-https://gist.github.com/Gazer/9377ae32c97b4f644e79c04febcd4909
+<script src="https://gist.github.com/Gazer/9377ae32c97b4f644e79c04febcd4909.js"></script>
 
 Ahora es la parte donde van al principio del artículo y comparar cual de los dos es más claro, y cual creen que podría tener menos errores.
 

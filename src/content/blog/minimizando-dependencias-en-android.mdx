@@ -7,7 +7,10 @@ redirect_from:
 categories: "Android, Android App Development, AndroidDev, Custom Views, Programación, Spanish"
 heroImage: '/img/uploads/2019/02/bc306-1u2ifnjemieoygmjnxol0sg.png'
 ---
-#### Es común que cuando nos encontramos frente a un problema lo primero que atinamos es a buscar una biblioteca que ya provea una solución. Si bien es una buena práctica (Don’t repeat yourself) muchas veces esta solución trae más problemas a futuro que soluciones.
+
+Es común que cuando nos encontramos frente a un problema lo primero que atinamos es a buscar una biblioteca que ya provea una solución. Si bien es una buena práctica (Don’t repeat yourself) muchas veces esta solución trae más problemas a futuro que soluciones.
+
+<script src="https://gist.github.com/Gazer/a3e8f61031a013aab690c75aeccb0b60.js"></script>
 
 Un caso particular que se suele ver mucho en Android es la necesidad de hacer la experiencia del usuario más rica, de darle más información en pantalla. Para ellos agregamos toda clase de detalles a nuestras UIs, y como escribir vistas desde cero suele ser complejo, terminamos incluyendo una biblioteca como dependencia seleccionada de alguna de las opciones populares.
 
@@ -48,13 +51,13 @@ Para implementar un indicador de página no necesitamos mucho :
 
 Lo primero que debemos hacer es crear el esqueleto base de nuestra vista con los constructores que necesita. Cuando extendemos View nos pide que definamos un constructor. Si bien con solo definir el primero alcanzaría para este caso, siempre es bueno definirlos todos, sobre todo si queremos agregar luego la posibilidad de customizar la vista desde el layout XML.
 
-https://gist.github.com/Gazer/a3e8f61031a013aab690c75aeccb0b60
+<script src="https://gist.github.com/Gazer/a3e8f61031a013aab690c75aeccb0b60.js"></script>
 
 Antes de empezar a [dibujar algo](https://developer.android.com/training/custom-views/custom-drawing.html) vamos a necesitar algunos objetos básicos. Como regla general es malo crear instancias de cualquier cosa en el ciclo de dibujo. Recuerden que debemos poder mantener **60fps** en caso de querer animar y si el _garbage collector_ está en el medio eso no es alcanzable.
 
 Este método _setup()_ que creamos será llamado desde todos los constructores que definimos anteriormente, de manera que no importe como se cree la vista tendremos todo lo necesario. Los objetos _Paint_ nos permiten definir cómo se van a dibujar las cosas.
 
-https://gist.github.com/Gazer/5098ec213709d3bac7263d657cca6188
+<script src="https://gist.github.com/Gazer/5098ec213709d3bac7263d657cca6188.js"></script>
 
 Dibujar los círculos que representan las páginas es bastante simple en este caso. Lo que hago es calcular el ancho total que van a ocupar los N puntos, contando los espacios de separación que son proporcionales al diámetro y luego centro el bloque completo tanto en dirección horizontal como vertical.
 
@@ -64,17 +67,17 @@ Todos estos cálculos se hacen en la pasada de layout, específicamente la llama
 
 > Siempre que calculemos el tamaño de nuestra vista es fundamental tener en cuenta el padding que el programador está deseando para nuestra vista. En este caso nuestra vista, por ejemplo, queremos que sea como mínimo el diámetro elegido más el padding.
 
-https://gist.github.com/Gazer/6ecbed1b078ac0c2a07608e533698c13
+<script src="https://gist.github.com/Gazer/6ecbed1b078ac0c2a07608e533698c13.js"></script>
 
 Ya con todas las piezas en su lugar podemos proceder a escribir el método _onDraw_ de nuestra vista, que es donde finalmente se pone interesante.
 
 Todas las vistas en Android son utilizables no solo en nuestras aplicaciones, sino que también podemos verlas en el editor visual del _Android Studio_. Es por eso que el framework nos da la posibilidad de preguntar en que contexto se va a dibujar la vista. En este caso lo que se hizo fue dibujar 5 círculos con el del medio como página actual en el editor, de manera de poder tener una buena vista previa de la vista en la ventana.
 
-https://gist.github.com/Gazer/dc1f39f6c5787a0d19240350855b5ca2
+<script src="https://gist.github.com/Gazer/dc1f39f6c5787a0d19240350855b5ca2.js"></script>
 
 Como último paso y no por eso menos importante, nos falta conectar con el _ViewPager_ y saber cuando éste último cambia de página. Para eso basta con agregar un _PageChangeListener_ y el resto es historia :)
 
-https://gist.github.com/Gazer/09c80557fda8b9d2b91d6953d5afbec4
+<script src="https://gist.github.com/Gazer/09c80557fda8b9d2b91d6953d5afbec4.js"></script>
 
 ---
 
@@ -85,4 +88,4 @@ A esta implementación se le pueden mejorar un par de cosas :
 - Utilizar _attributes_ para configurar el radio, color, forma
 - Utilizar el _onPageScrolled_ para animar el cambio de página
 
-Pero eso queda como desafío para el lector :). El código completo de la clase se los dejo en este [Gist](https://gist.github.com/Gazer/6702455190adefef62bf721e9c5be0ae).
+Pero eso queda como desafío para el lector :). El código completo de la clase se los dejo en este [Gist](<script src="https://gist.github.com/Gazer/6702455190adefef62bf721e9c5be0ae.js"></script>).
