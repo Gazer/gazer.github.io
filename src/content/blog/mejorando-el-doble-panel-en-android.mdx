@@ -1,0 +1,95 @@
+---
+title: 'Mejorando el "Doble panel" en Android'
+description: ""
+pubDate: 2013-02-03
+redirect_from: 
+            - https://gazer.com.ar/2013/02/03/mejorando-el-doble-panel-en-android/
+categories: "android, diseño, Programación, ui"
+heroImage: '/img/uploads/2013/02/ics_effects.jpeg'
+---
+Siguendo con la serie de casos en mejorar las interfaces en Android, esta vez le toca al doble panel que solemos ver en las aplicaciones cuando las usamos en una tablet. No voy a entrar en detalle de cómo implementar un doble panel con Fragments ya que en la [web](http://developer.android.com/training/multiscreen/adaptui.html) hay más que suficiente información para hacerlo.
+
+De lo que si vamos a hablar es de cómo mejorar el aspecto y darle al usuario una mejor experiencia. Para lograr esto lo que vamos a hacer es copiar lo que hacen Google con sus aplicaciones, com Gmail o la misma aplicación de Contactos que viene en IceCream Sandwich y que se ve algo así :
+
+![ics_effects](/img/uploads/2013/02/ics_effects.jpeg)
+
+El simple agregado de un gradiente a modo de "dropshadow" entre los paneles y el indicador de selección cambian radicalmente la experiencia de usuario, por más simple que parezca el cambio, pueden verlo al final del post donde dejo el antes y el después. Ahora bien, lo simple no siempre es fácil :), por lo que para lograr este efecto tuve que trabajar un poco. Empecemos por la sombra.
+
+Existen varias formas de lograrla, desde las más simples como usar un FrameLayour con un bitmap como overlay hasta backgrounds complicados. Sin embargo se pueden obtener efectos raros en versiones nuevas de Android, ya que la ActionBar también tiene un dropshadow. Estas técnicas además pueden hacer complicado la segunda parte que es mostrar el selector.
+
+La forma más prolija que encontré es meterse en el ciclo de render y aprovechar el método "dispatchDraw(Canvas canvas)". Este método es el encargado de dibujar un View, por lo que si lo sobreescribimos podemos dibujar cosas antes o despues del render original (que lo llamaremos con "super.dispatchDraw(canvas)"). Como es un método protegido, lo que debemos hacer entonces es nuestra propia View, en este caso basta con hacer nuestra propia ListView :
+
+```
+;
+public class ShadowListView extends ListView {
+  public ShadowListView(Context context) {
+    super(context);
+  }
+
+  private void prepareShadow() {
+    // Load drawables and initialize stuff
+  }
+
+  @Override
+  protected void dispatchDraw(Canvas canvas) {
+    // Draw the children
+    super.dispatchDraw(canvas);
+
+    if (!initializes)
+      prepareShadow();
+
+    drawShadow(canvas);
+  }
+
+  private void drawShadow(Canvas canvas) {
+    canvas.save();
+    canvas.translate(getWidth() - 20, 0);
+    drawable.setBounds(0, 0, 20, getHeight());
+    drawable.draw(canvas);
+    canvas.restore();
+  }
+}
+```
+
+Lo siguientes es utilizarla en nuestro layout directamente en lugar de usar &lt;ListView> usar &lt;ShadowListView>. Con esto lo que hacemos es dibujar en el borde derecho, desde arriba hasta abajo con un ancho de "20" la sombra, haciendo parecer que el panel derecho está por arriba y que le hace "sombra" a la lista, cool :), no?.
+
+Lo siguiente a lograr es dibujar el triángulo y queremos tener en cuanta varias cosas : debe estar dibujado por encima de la sombra (así el efecto queda bien) y debe coincidir en la posición del elemento seleccionado en la lista, si hay alguno.
+
+El primer problema con el que me encontré es que quise utilizar "getSelectedView" para obtener la View seleccionada. Lamentablemente no pude entender por qué no funciona como parecería indicar el nombre :D. Por lo que fui por un camino diferente : como ya tengo mi clase de ListView, puedo sobreescribir otros métodos, como por ejemplo "performItemClick" para saber cuando un item fue "clickeado" (ya sea via touch o via teclado). Cuando eso pasa me guardo esa posición para futuro :
+
+```
+@Override
+public boolean performItemClick(View view, int position, long id) {
+  selectedPosition = position;
+  return super.performItemClick(view, position, id);
+}
+```
+
+Y luego puedo definir el método que dibuja la flecha :
+
+```
+private void drawArrow(Canvas canvas) {
+  View selectedView = getChildAt(selectedPosition - getFirstVisiblePosition());
+  if (selectedView != null) {
+    selectedView.getDrawingRect(rect);
+
+    offsetDescendantRectToMyCoords(selectedView, rect);
+
+    int h = selectedView.getHeight();
+
+    canvas.save();
+    canvas.translate(getWidth() - h, rect.top);
+    arrow.setBounds(0, 0, h, h);
+    arrow.draw(canvas);
+    canvas.restore();
+  }
+}
+```
+
+Lo primero que hago es ver que vista está seleccionada. Para eso, como ListView puede reutilizar un View para optimizar el render, debo tener en cuenta el View que se está mostrando. Si tengo una vista obtengo su recta de de dibujado. Esta recta está en coordenadas de la vista, por lo que tengo que trasladar esas coordenadas a mi espacio de coordenadas, y eso android me permite hacerlo fácil llamando a "offsetDescendantRectToMyCoords".
+
+Por último dibujo la flecha que es un PNG cuadrado que tiene la flecha con su propio dropshadow. El paso final es llamar a drawArrow despues de drawShadow en el dispatchDraw, de manera que si dibujo la flecha, esta se dibuja por arriba.
+
+El resultado final, antes y después :
+
+[![table_sin_efectos](/img/uploads/2013/02/table_sin_efectos.png)](/img/uploads/2013/02/table_sin_efectos.png) [![tablet_conf_efectos](/img/uploads/2013/02/tablet_conf_efectos.png)](/img/uploads/2013/02/tablet_conf_efectos.png)

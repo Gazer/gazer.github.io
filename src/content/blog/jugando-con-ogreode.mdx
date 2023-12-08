@@ -1,0 +1,22 @@
+---
+title: 'Jugando con OgreODE'
+description: ""
+pubDate: 2007-10-07
+redirect_from: 
+            - https://gazer.com.ar/2007/10/07/jugando-con-ogreode/
+categories: "Programación"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Ya hace un rato empecé a desarrollar un jueguito pedorro de autos con la intensión de aprender a usar [Ogre](http://www.ogre.org/). Al principio pensaba no usar un motor de física hasta que me di cuenta que no me daba :P, por lo que empecé a evaluar opciones.
+
+Sin lugar a dudas la mejor opción que encontré [Ageia](http://www.ageia.com/) pero no es libre y no hay SDK para Linux (que es lo que buscaba) por lo que recaí en [ODE](http://www.ode.org/), mediante OgreODE, que todavía no me convence.
+
+Para empezar tiene problemas con Heighmaps : si usamos un mapa con mucha resolución hace _agua_ en la simulación y si usamos uno de baja resolución anda bien, pero el mapa se ve como un Family Game :). Es por eso que decidí hacer el escenario con un [Mesh](http://en.wikipedia.org/wiki/Polygon_mesh) y modelarlo a mano todo. No es perfecto pero la simulación es bastante mejor en los cambios de altura.
+
+El otro problema, tal vez más grave, es la falta de documentación (tanto de ODE como de OgreODE). La poca que hay es vaga y hay que andar adivinando muchas cosas, sobre todo las unidades que esperan los parámetros. Experimentando un poco sale y veré si más adelante colaboro en el Wiki para completar la documentación.
+
+Por el lado de OgreODE tal vez lo más problemático es que se está buscando maintainer y el actual solo hace bug fixes graves pero no agrega nueva features. Por el lado bueno es que tiene mucho Prefabs: clases que encapsulan objetos comunes automatizando la creación de objetos complejos desde código o desde un XML externo. El que estoy usando es el Prefab de Vehicle que el peor problema que tiene ahora es que las curvas de torque del motor no estan bien implementadas y no anda como uno esperaría (básicamente tengo 1 solo cambio en el motor), tendré que extender las clases por mi cuenta o aportar algun parche :).
+
+Los gráficos del demo que se ve al final del post están hechos por mi (se nota ;-)) con Blender. Nada del otro mundo solo para que se aprecie lo importante del demo que es la física. Todavía queda mucho por investigar, solo espero encontrar el tiempo.
+
+httpv://www.youtube.com/watch?v=wTP9I7R4WjA

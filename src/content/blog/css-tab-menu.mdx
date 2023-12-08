@@ -1,0 +1,99 @@
+---
+title: 'CSS Tab menú'
+description: ""
+pubDate: 2008-11-10
+redirect_from: 
+            - https://gazer.com.ar/2008/11/10/css-tab-menu/
+categories: "css, General"
+heroImage: '/img/uploads/2008/11/tab_menu.png'
+---
+Trabajando en un sitio me topé con el problema de tener que implementar tabs para el menú de navegación a fin de seguir el boceto que había pasado el diseñador.
+
+El principal problema era que el tab tenía que ser auto-expandible ya que no sabemos de entrada qué textos van a ir en cada tab. Lo segundo que tenía que soportar es dos estados para los tabs, para poder saber cuál es el que corresponde a la página actual.
+
+La solución final no es del todo ideal, ya que el texto de cada tab no puede ser arbitrariamente largo, pero en nuestro caso es por ahora lo suficiente y llegado al caso se puede extender fácilmente. Luego de trabajar un buen rato logré lo que sigue :
+
+![](/img/uploads/2008/11/tab_menu.png "Trabajo final del tab menu")
+
+El HTML que genera el menú incluye tanto los tabs con sus respectivos links, como la fina línea negra y naranja de abajo (que hace de cierre), quedando algo cómo :
+
+```
+<ul id="navigation">
+  <li><a><span>Menú Item #1</span></a></li>
+  <li><a><span>Item #2</span></a></li>
+  <li><a><span>Otro Item más largo</span></a></li>
+  <li class="current"><a><span>Actual</span></a></li>
+</ul>
+```
+
+Cada tab está formado por dos imágenes aplicadas mediante CSS de manera de lograr el efecto deseado. El `span` interior al anchor es necesario para hacer que sea de largo variable. No me gusta mucho usar tags como helpers de los CSS, pero muchas veces no queda opción. Las imágenes en cuestión son :
+
+![](/img/uploads/2008/11/menu_1_off.png "menu_1_off") ![](/img/uploads/2008/11/menu_2_off.png "menu_2_off")
+
+El largo de la primera imagen es lo que define el largo máximo del tab que podemos tener. Para nuestro sitio consideramos que 250px de largo era más que suficiente.
+
+Yendo a los CSS, a continuación está el CSS que se aplica a la lista, definiendo la línea separadora como un background alineado al fondo y que repite horizontalmente.
+
+```
+ul#navigation {
+  list-style: none;
+  padding: 0 0 0 9px;
+  margin: 0 0 0 0;
+  background: transparent url(images/menu_separator.png) repeat-x scroll left bottom;
+  height: 49px;
+}
+```
+
+El truco para poder hacerlo extensible es usar el tag `span` para poner el cuerpo (imagen 1) y luego usar el `a` para cerrar el borde de la derecha (imagen 2)
+
+```
+ul#navigation li a {
+  background: transparent url(images/menu_2_off.png) no-repeat scroll right top;
+  height: 36px;
+  float: left;
+  padding-right: 15px;
+  margin-left: 3px;
+  text-decoration :none;
+  color: #000;
+  text-align: center;
+}
+
+ul#navigation li a span {
+  background: transparent url(images/menu_1_off.png) no-repeat scroll 0 0;
+  display:block;
+  height: 36px;
+  padding: 0.7em 0 0 1em;
+}
+```
+
+Los tamaños, margenes y paddings son en función del tamaño de las imágenes. Para el caso del tab seleccionado solo basta cambiar los background y ajustar algún que otro color :
+
+```
+ul#navigation li.current a {
+  background: transparent url(images/menu_2_on.png) no-repeat scroll right top;
+}
+
+ul#navigation li.current a span {
+  background: transparent url(images/menu_1_on.png) no-repeat scroll 0 0;
+  color: #fff;
+  font-weight: bold;
+}
+```
+
+Para que ande en IE hay que aplicar algunos hacks específicos para que no se rompa todo, pueden hacerlo usando los [include condicionales](http://msdn.microsoft.com/en-us/library/ms537512.aspx) :
+
+```
+/* IE hacks */
+ul#navigation {
+  /* El ancho de la barra de navegación */
+  width: 1004px;
+}
+
+ul#navigation li {
+  display: inline;
+}
+
+ul#navigation li a span {
+  display: inline;
+}
+```

@@ -1,0 +1,74 @@
+---
+title: 'Sitemaps vía crawling'
+description: ""
+pubDate: 2009-07-15
+redirect_from: 
+            - https://gazer.com.ar/2009/07/15/sitemaps-via-crawling/
+categories: "has_sitemap, http, Programación, ruby"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hoy me pidieron agregar un [Sitemap](http://www.sitemaps.org/es/) para uno de los trabajos que hicimos para el gobierno y me encontré con que los plugins que uso para esta tarea no me cerraban de forma cómoda. El problema es que este sitio tiene, además del contenido dinámico, muchas páginas estáticas que no puedo referenciar desde un modelo, por lo que debía forzarlas y era bastante molesto.
+
+Buscando encontré [una solución](http://www.webficient.com/2008/09/06/google-sitemap-ruby-on-rails) práctica para este caso (donde hay pocas páginas, menos de 1k) que usa un crawler para recorrer todo el sitio y obtener las URLs a agregar al sitemap. El script que presentan me sirvió, aunque tuve que hacerle algunos cambios menores.
+
+El primer problema que tenía era que me agregaba páginas que no deben ir en un sitemap (ni ser indexadas) como las de login, recuperar clave, form de registración, etc. Por lo que tuve que modificar ligeramente el código para no seguir los enlaces que estuvieran marcados con `rel="nofollow"` y para eso modifiqué en el método `extract_and_call_urls` la última línea como sigue :
+
+```
+links.each{ |link|
+   extract_and_call_urls(link.href) unless
+      !can_follow?(link) || ignore_url?(link.href) ||
+      @visited_pages.include?(link.href)
+}
+```
+
+Y definiendo el nuevo método :
+
+```
+ def can_follow?(link)
+   return false if link.nil? ||
+   (link.attributes["rel"] && link.attributes["rel"].include?("nofollow"))
+
+   true
+ end
+```
+
+Entonces, cuando el crawler encuentra un enlace que el _developer_ marcó que no debe seguirse en una indexación (esto es principalmente para los crawlers de los search engines) se ignora y no se agrega al sitemap.
+
+El otro cambio menor fue que tenía algunas URLs con el path completo y por default siempre me agregaba al inicio el domain name, por lo que me quedaban URLs inválidas, por lo que hice la siguiente modificación :
+
+```
+# Antes
+xml.loc(@starting_url + url)
+
+# Después
+xml.loc(url.include?(@starting_url) ? url : (@starting_url + url))
+```
+
+Una vez probado el script hice una tarea rake para poder correrla fácil desde un cronjob :
+
+```
+# lib/tasks/sitemap.rake
+require 'lib/crawler'
+
+desc "Generate the sitemap file"
+task :sitemap => :environment do
+  start_url = ENV["URL"] || "http://localhost:3000"
+  Crawler.new(start_url, (ENV["CREDS"] if ENV["CREDS"]), ENV["QUIET"] || false, ENV["SITEMAP"] || false, ENV["DEBUG"] || false)
+end
+```
+
+Y listo, lo último fue hacer un deploy y configurar un cron.dayli para que cree el sitemap actualizado :
+
+```
+rake sitemap URL=http://www.haciendoelcolon.buenosaires.gob.ar SITEMAP=true
+```
+
+Así una vez por día se actualiza el sitemap y se hace un ping a google para que sepa que debe pasar a reindexar el contenido.
+
+Esto tiene varias desventajas (pero aún así para este sitio sirve a su propópito) :
+
+- No se puede priorizar cada tipo de contenido fácilmente
+- La fecha de última modificación es inexacta
+- Carga el webserver para generar el sitemap
+
+Código completo : [crawler.rb](https://www.gazer.com.ar/wp-content/uploads/2009/07/crawler.rb)

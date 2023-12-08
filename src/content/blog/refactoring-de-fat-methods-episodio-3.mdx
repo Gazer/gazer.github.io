@@ -1,0 +1,72 @@
+---
+title: 'Refactoring de "Fat Methods" - Episodio 3'
+description: ""
+pubDate: 2008-10-30
+redirect_from: 
+            - https://gazer.com.ar/2008/10/30/refactoring-de-fat-methods-episodio-3/
+categories: "observer, Programación, refactoring"
+heroImage: '/blog-placeholder-about.jpg'
+---
+En el [Episodio 1](https://www.gazer.com.ar/2008/10/02/refactoring-de-fat-methods-episodio-1/) trabajé el método `Matches#create` y había dejado una parte a la que [Des](https://www.gazer.com.ar/2008/10/02/refactoring-de-fat-methods-episodio-1/#comment-32897) preguntó por qué la ignoraba. En ese momento no quería extender mucho más el post por lo que en esta oportunidad vamos a completar el refactoring pendiente.
+
+El código que habíamos logrado en ese momento es el siguiente:
+
+```
+  def create
+    @match = current_user.matches.create!(params[:match])
+
+    @notifications = @match.owner.friends.select {|f| f.notify_new_matches? }.collect(&email)
+    Emailer.deliver_match_created(@match, @notifications) if @notifications.any?
+
+    flash[:success] = "El partido fue creado."
+    redirect_to matches_path
+  rescue
+    render :action => 'new'
+  end
+```
+
+Lo que nos quedaba terminar era cómo mejorar el envío de las notificaciones para aquellos amigos que tenían activa dicha opción. Como primer paso vamos a separar la lógica del mailer de manera que no quede mezclado en el controller, y ya que estamos, que no importa donde se cree un partido el email salga igual sin la necesidad de copiar y pegar código.
+
+Una opción es usar un callback `after_create` como ya hicimos en el post pasado, pero a mi no me gusta mezclar en los modelos lógica que no tiene que ver con la persistencia. La razón es que esta tarea de enviar emails no es algo propio de un modelo, no debería tener esa responsabilidad. Pero dejarla en el controller sería "irresponsable" :P.
+
+Una opción, no muy acertada, podría ser usa un filtro que se ejecute después del `create` (`after_filter`) pero quizás no siempre tendríamos la posibilidad de ejecutar un filtro. La mejor opción es utilizar un `Observer` para mirar al modelo `Match`, y cuando uno nuevo es creado, ejecutar nuestro código.
+
+Los Observers se registran a si mismos a un modelo dado escuchando los callbacks que nosotros definamos. Estos callbacks son los mismos que existen en `ActiveRecord`, siendo algunos : after_create, before_create, after_save, etc...
+
+Como vemos, el `Observer` es casi lo mismo (a nivel práctico claro está) que usar los callbacks de `ActiveRecord` pero sin tener que mezclar acciones que no son propias de los modelos. Muchas veces uno se olvida que existen ya que generalmente se los utiliza para las estrategias de invalidación de cache (que puntualmente estos observers se llaman Sweepers).
+
+El código del observer quedaría ahora :
+
+```
+  # app/model/match_observer.rb
+  class MatchObserver < ActiveRecord::Observer
+    def after_create(contact)
+      @notifications = @match.owner.friends.select {|f| f.notify_new_matches? }.collect(&:email)
+      Emailer.deliver_match_created(@match, @notifications) if @notifications.any?
+    end
+ end
+```
+
+Como se ve, en ningún lugar hacemos referencia al modelo observado. Esto es porque Rails lo infiere automáticamente a partir del nombre del `Observer`. Claro está que si por alguna razón usamos un nombre que no permita inferirlo lo podemos especificar.
+
+Lo único que faltaría es decirle a Rails que existe el `Observer`, para que lo cargue y lo registre con la clase correspondiente. Para eso debemos agregar en nuestros environment lo siguiente :
+
+```
+  config.active_record.observers = :match_observer
+```
+
+Ahora si, veamos como quedó nuestro controlador totalmente refactorizado :
+
+```
+  # Dentro de matches_controllers.rb
+  def create
+    @match = current_user.matches.create!(params[:match])
+    flash[:success] = "El partido fue creado."
+
+    redirect_to matches_path
+  rescue
+    render :action => 'new'
+  end
+```
+
+Ahora si nuestro controlador está bastante mejor. Para la próxima entrega vamos a como mejorar las asociaciones de los modelos para poder cambiar el `match.owner.friends.select` que no es para nada prolijo.

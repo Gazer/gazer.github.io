@@ -1,0 +1,16 @@
+---
+title: 'Antispam en el GForge'
+description: ""
+pubDate: 2007-01-15
+redirect_from: 
+            - https://gazer.com.ar/2007/01/15/antispam-en-el-gforge/
+categories: "General, Programación"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Ya hace un largo tiempo que los spammers nos estaban dando batalla en el [GForge](http://www.gforge.org/) que [tenemos](http://gforge.lug.fi.uba.ar/) en el [LugFI](http://lug.fi.uba.ar/). Este sábado, mientras me recuperaba decidí finalmente mirar el código y ver que se podía hacer.
+
+Lo primero que me encontré es que el código apesta, y mucho :). No existe una forma simple o modular de extender la interfaz, así que recurrí a hackear directamente el código. Luego de un ratito le mande el diff a Des para que lo aplique.
+
+El resultado : los reportes de bug/feature request/etc requieren ahora un campo más que es el antispam, así como también dejar comentarios en registros ya abiertos. El antispam no hace diferencia entre usuarios registrados y anónimos, así que espero que los users registradon no se ofendan :).
+
+El parche en cuestión está [acá](https://gazer.com.ar/patches/gforge-antispam-lugfi-0.2.patch) a y aplica seguro sobre la versión 4.5.19 (yo use el orig.tar.gz que provee [Debian](http://www.debian.org/) para asegurarme que el patch aplicara en nuestro servidor). No puedo garantizar que aplique en otra versión.

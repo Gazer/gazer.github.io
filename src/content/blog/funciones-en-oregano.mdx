@@ -1,0 +1,26 @@
+---
+title: 'Funciones en Oregano!'
+description: ""
+pubDate: 2005-07-01
+redirect_from: 
+            - https://gazer.com.ar/2005/07/01/funciones-en-oregano/
+categories: "Programación"
+heroImage: '/wp-content/oregano-funciones-mini.jpg'
+---
+Luego de una semana agitada en la facultad necesitaba algo para relajar la mente, ¿y qué tarea _doméstica_ puede ser mejor para ello que programar ? :-)
+
+Hace ya varias semanas había recibido una consultar sobre como plotear diferencias de potencias entre dos nodos, y la respuesta que tuve que dar fue "no se puede". El problema principal es que GNU Cap no lo soporta, NgSpice creo que sí, aunque nunca he probado, y eso limitaba. Es por eso que decidí agregar funciones para graficar.
+
+La operatoria es simple, se simula el circuito, con tantas puntas de prueba como se quiera, y luego en el gráfico se agregan funciones. Por ahora solo implementé (hackeado en el código) la resta, para poder hacer diferencias de potencial. El resultado se puede ver a continuación :
+
+[![Funciones !!](/wp-content/oregano-funciones-mini.jpg)](/img/oregano-funciones.jpg)
+
+No me he puesto a analizar si los resultados son coherentes, pero no es algo que me preocupe a esta hora de la noche, lo importante es que funcione :-D. Por lo menos, las gráficas de v(1)-v(2) y v(2)-v(1) son simétricas respecto de X y el resultado se ve coherente.
+
+Lo que se intentó simular fue como varía la tensión en C1, el de arriba. Hay dos C1 ya que apareció un lindo bug de numeración en la edición del esquemático :-)
+
+Cualquier comentario acerca de la validez del resultado será bienvenida. También será de utilidad si alguien compara el resultado con OrCad o algún otro producto privativo,
+
+Por último y me voy a dormir :-D, a los electrónicos les pido que me instruyan en que funciones son útiles, me resuena en la cabeza la palabra "transferencia", pero no estoy muy seguro de a que se refiere, y más aún, que funciones para cada tipo de análisis (AC, DC, Fourier, Tiempo) son utilizadas cuando se analizan circuitos.
+
+En cuando complete medianamente el código, el parche será publicado.

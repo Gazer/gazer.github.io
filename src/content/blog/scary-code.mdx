@@ -1,0 +1,56 @@
+---
+title: 'Scary Code'
+description: ""
+pubDate: 2006-06-17
+redirect_from: 
+            - https://gazer.com.ar/2006/06/16/scary-code/
+categories: "Mono"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Preparándome para mi charla sobre Mono en la CTT de junio organizada por el Cafelug, me puse a jugar con un ejemplo para mostrar que, efectivamente, anda eso de mezclar lenguajes en .NET.
+
+Antes de seguir leyendo, si sufrís de nauceas, estás embarazado/a, o simplemente este tipo de cosas te impresionan, no sigas leyendo :-)
+
+Todo comienza con la definición de nuestra clase en C# :
+
+```
+using System;
+public class ClaseCS {
+    private int x;
+    public int X {
+        get { return x; }
+        set { x = value; }
+    }
+    public ClaseCS (int x) {
+        X = x;
+    }
+    public override string ToString () {
+        return String.Format ("Soy ClaseCS hecha en C# {0}", x);
+    }
+}
+```
+
+No es una clase que haga mucho (el property está bien al cuete). Lo importante acá es el método ToString que luego utilizaremos desde IronPython.
+
+Para compilar solo debemos ejecutar : #> mcs -target:library -out:clasecs.dll ClaseCS.cs.
+
+La parte que asusta es ahora ejecutar la consola de IronPython, sobre todo por el _notice de copyright_ que trae la última versión :-). Voy a mostrar todo de una y después explicar que es cada cosita.
+
+```
+IronPython 1.0.60523 (Beta) on .NET 2.0.50727.42
+Copyright (c) Microsoft Corporation. All rights reserved.
+>>> import clr
+>>> clr.AddReferenceToFile("clasecs.dll")
+>>> import ClaseCS
+>>> c = ClaseCS(1)
+>>> print c
+Soy ClaseCS hecha en C# 1
+```
+
+Trivial, no :) ?. Básicamente lo que hago es importar un módulo especial de IronPython que se encarga de manejar las referencias a los assemblies .Net del sistema. Si hacemos cosas como "import System" el CLR se encargaría transparentemente. En mi caso, al cargar algo especifico lo debo hacer explicitamente (y no es mayor problema, porque el Zend de Python dice "mejor explícito que implícito" :-D) .
+
+El método AddReferenceToFile agrega una referencia al DLL que habíamos generado antes, para que la máquina virtual la conozca. Luego importamos el módulo, y como no tenemos namespace declarado, podemos instanciar directamente ClaseCS ().
+
+Por último llamamos a "print c" que lo que hace en llamar a c.\_\_str\_\_ para obtener la representación en forma de texto de la instancia. Internamente IronPython traduce a una llamada ToString del código intermedio que está mapeada con nuestro ToString de C#, dando como resultado que se imprima el texto que habíamos definido en nuestra clase de C#.
+
+No es algo que recomiende hacer en sus casas, pero es algo relindo y loco para impresionar en una charla :-P

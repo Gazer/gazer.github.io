@@ -1,0 +1,92 @@
+---
+title: 'Refactoring de "Fat Methods" - Episodio 1'
+description: ""
+pubDate: 2008-10-02
+redirect_from: 
+            - https://gazer.com.ar/2008/10/02/refactoring-de-fat-methods-episodio-1/
+categories: "Programación, refactoring, ruby on rails"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Luego de escribir mucho código uno comienza a mirar a ver que hacen los de al lado, y al mirar se da cuenta de lo mal que uno escribe código cuando comienza con un nuevo lenguaje :). Algo de eso me pasa hoy en día con [¡Falta Uno!](http://www.falta-uno.com.ar).
+
+En el camino de emprolijar las cosas para liberar el código tuve la necesita de poner a refactorizar el código porque hay partes que no son nada bonito. Voy a tratar de plasmar en los siguientes posts algunas lecciones aprendidas junto con el paso a paso del refactoring del código.
+
+Antes que nada y como buena práctica es ideal tener buenos test sobre los que se va a refactorizar ya que es muy fácil romper alguna funcionalidad que se _suponía_ que andaba. Si bien para los ejemplos acá voy a ignorar esta _**buena práctica**_, no se los aconsejo :).
+
+Vamos a empezar con el método `create` de controlador `Matches`, encargado de crear un nuevo partido :
+
+```
+  def create
+    @match = current_user.matches.create(params[:match])
+    if @match.errors.empty?
+      Player.create :match => @match, :user => current_user
+
+      @notifications = @match.owner.friends.select {|f| f.notify_new_matches? }.collect(&:email)
+      Emailer.deliver_match_created(@match, @notifications) if @notifications.any?
+
+      flash[:success] = "El partido fue creado."
+      redirect_to matches_path
+    else
+      render :action => 'new'
+    end
+  rescue
+    render :action => 'new'
+  end
+```
+
+Asusta un poco, ¿no?. Para entender el problema, veamos primero como que involucra crear un nuevo partido :
+
+- Crear el partido
+- Anotar al usuario que creó el partido en uno de los equipos
+- Notificar a todos los amigos que se creó un nuevo partido
+
+Dado esto, pasemos a analizar los problemas. La primer pregunta que habría que hacerse es : ¿Quién es el responsable de anotar al jugador?, ¿Tiene sentido que un usuario pueda crear un partido sin que esté anotado?. En el contexto nuestro, la respuesta a la última pregunta es "No", solo porque así lo defino yo :). Entonces podemos responder a la primer pregunta : El `Match` debería ser el responsable de anotar al dueño del partido cuando es creado.
+
+Para lograr esto último lo que debemos hacer es mover la lógica de creación del `Player` dentro de un callback en el modelo `Match`, quedando algo así :
+
+```
+class Match  self, :user => owner
+  end
+end
+```
+
+De esta forma nos aseguramos que se cumpla lo pedido sin correr el riesgo de que se puedan crear matches sin que el owner este anotado inicialmente. También ganaríamos en el caso de que exista alguna otra forma de crear un partido, por ejemplo si agregáramos la posibilidad de crear un partido enviando un email, no tendríamos la necesidad de repetir la lógica inicial en dos lugares diferentes.
+
+Y ahora nuestro controlador queda algo cómo :
+
+```
+  def create
+    @match = current_user.matches.create(params[:match])
+    if @match.errors.empty?
+      @notifications = @match.owner.friends.select {|f| f.notify_new_matches? }.collect(&:email)
+      Emailer.deliver_match_created(@match, @notifications) if @notifications.any?
+
+      flash[:success] = "El partido fue creado."
+      redirect_to matches_path
+    else
+      render :action => 'new'
+    end
+  rescue
+    render :action => 'new'
+  end
+```
+
+Lo siguiente es limpiar un poco lo lógica del modelo. Una cosa que molesta a la vista son las dos llamadas a `render`, ¿son realmente necesarias? La respuesta en NO. Con el `rescue` lo que hacemos es que dada una `Exception` vuelva al formulario de creación, lo mismo que si el partido no es válido, por lo que simplemente podríamos haber usado el método `create!` que lanza una `Exception` si el modelo no es válido evitándonos así el molesto `if`. Quedando ahora :
+
+```
+  def create
+    @match = current_user.matches.create!(params[:match])
+
+    @notifications = @match.owner.friends.select {|f| f.notify_new_matches? }.collect(&:email)
+    Emailer.deliver_match_created(@match, @notifications) if @notifications.any?
+
+    flash[:success] = "El partido fue creado."
+    redirect_to matches_path
+  rescue
+    render :action => 'new'
+  end
+```
+
+Que si lo comparan con la versión inicial es mucho más legible. "Fat model, skinny controllers" es la clave a seguir. Todavía queda por mejorar la forma en que se genera la lista de emails de los amigos que desean recibir la notificación, pero no es algo que me moleste de momento.
+
+En otras entregas seguiré mostrando el resto del refactoring de otro métodos que son aún peores que este :).

@@ -1,0 +1,12 @@
+---
+title: 'Problema resuelto!!'
+description: ""
+pubDate: 2004-12-13
+redirect_from: 
+            - https://gazer.com.ar/2004/12/13/problema-resuelto/
+categories: "GNU+Linux"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hace 2 semanas aproximadamente había instalado udev para manejar la cámara digital con las herramientas de Gnome y de pronto me había desaparecido /dev/hdd, que es mi grabadora de CDs. Luego de preguntar a cuanto gurú, pude encontrar la solución googleando un rato.
+
+El problema era simplemente que no estaba cargando el módulo _ide-cd_. Ahora, ya tengo mi /dev/hdd nuevamente, y un lindo /dev/cdrom ya que en el camino aprendí a escribir reglas en /etc/udev/rules.d :-)

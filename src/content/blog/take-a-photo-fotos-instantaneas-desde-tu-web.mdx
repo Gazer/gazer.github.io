@@ -1,0 +1,24 @@
+---
+title: 'Take A  Photo - Fotos instantáneas desde tu web'
+description: ""
+pubDate: 2009-04-02
+redirect_from: 
+            - https://gazer.com.ar/2009/04/02/take-a-photo-fotos-instantaneas-desde-tu-web/
+categories: "flash, javascript, Programación, ruby on rails"
+heroImage: '/blog-placeholder-about.jpg'
+---
+En la última semana estuve trabajando en agregar nuevas funcionalidades a un sitio de un cliente y entre los pedidos estaba una especie de Fotoblog para los usuarios (y bue, hay que pagar las cuentas a fin de mes :P).
+
+La cosa salió rápido, usando Paperclip que guarda las imágenes que se suben, se muestra en orden, etc, nada del otro mundo. Pero hablando con el cliente surgió la idea de hacer que el usuario se pueda tomar una foto directamente desde la web usando su webcam, así que después de decir "_si, se debe poder hacer_" mentalmente me salió un "_doh!, que dije!_". Lo último que se dijo en esa reunión fue "_Lo quiero_" :D.
+
+Ya había visto juegos flash que utilizan la webcam así que empecé por ahí, para ver como sacaban un frame del video, lo cual era muy fácil. Lo siguiente era serializarla. A falta de algo mejor hice un serializador de imágenes muy pedorro, pero que anda (aunque es lento), que envía por POST la información de cada pixel.
+
+La parte de Ruby fue fácil y decidí encapsularla en un plugin de Rails para poder reutilizarlo luego o por si a alguien más le sirve :). Además se puede integrar con Paperclip o AttachmentFu para hacer la persistencia de la imagen en donde sea.
+
+La única parte que usa Flash es el capturador de la cámara, porque otra no quedaba, pero luego el botón para tomar la foto y los eventos se manejan todo por Javascript.
+
+El plugin tiene varios TODOs, pero por si a alguien le sirve está en [github](http://github.com/Gazer/take-a-photo/tree/master).
+
+**Update** : A falta de demo, algunas de las fotos tomadas con la aplicación de ejemplo que hice hoy durante Locos x rails.
+
+\[gallery]

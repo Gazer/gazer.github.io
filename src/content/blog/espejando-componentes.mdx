@@ -1,0 +1,22 @@
+---
+title: 'Espejando Componentes.'
+description: ""
+pubDate: 2005-12-05
+redirect_from: 
+            - https://gazer.com.ar/2005/12/05/espejando-componentes/
+categories: "Oregano"
+heroImage: '/img/OreganoFlipFixedMini.png'
+---
+[![Mini](/img/OreganoFlipFixedMini.png)](/img/OreganoFlipFixed.png) Este fin de semana estuve avanzando en reescribir el viejo y querido código de _flipping_ en [Oregano](http://oregano.gforge.lug.fi.uba.ar/), tarea para nada trivial, donde he logrado grandes avances como se muestra en la imagen de ejemplo.
+
+El principal problema son las etiquetas, que no deben rotar, sino que lo que rota es su posición. Ahora, una vez rotada la posición, hay que actualizar el anclaje del texto para que se vea bien.
+
+Cómo es esto?, cuando uno pone un texto en una posición (x,y) por defecto esa posición indica el borde inferior izquierdo de la caja que _contiene al texto_. Al hacer un espejado horizontal, debemos cambiar el anclado para que la posición represente el borde inferior derecho de modo que el texto _salga para el otro lado_ y no se superponga con el componente. Lo mismo aplica para el espejado vertical.
+
+![Anchor Example](https://www.gazer.com.ar/wp-content/GtkAnchorExample.png)Los diferentes anclajes de un texto
+
+Pero tenemos otro problema :-), la rotación también afecta el anclado, por lo que el resultado debe calcularse en base a los dos parámetros simultáneamente, cosa que no es trivial, pero que espero terminar en unos días.
+
+Todo esto por ahora mejora el rotado y espejado de un componente individual. Por algún motivo no funciona bien cuando se aplica a una selección, pero es un problema que veré de solucionar más adelante.
+
+Si todo sale bien, el fin de semana tendríamos cerrado un bug de más de una año de edad :-)

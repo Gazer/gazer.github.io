@@ -1,0 +1,14 @@
+---
+title: 'Phusion Passenger (a.k.a. mod_rails)'
+description: ""
+pubDate: 2008-04-11
+redirect_from: 
+            - https://gazer.com.ar/2008/04/11/phusion-passenger-aka-mod_rails/
+categories: "apache, deploy, General, ruby on rails"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Finalmente hoy leo que ya está disponible la primer versión estable de [mod_rails](http://www.modrails.com/install.html), y si todo anda como dicen, no más problemas con fcgi o mod*balancer + mongrels. Simplemente deploy \_a la PHP*.\_ \_Será posible?
+
+Ventaja inmensa cuando se tiene más de un sitio en el mismo host. Hoy en día (apacha+mongrel) debo recordar y documentar que rango de puertos usa cada aplicación (son 3 por ahora) y al hacer los updates tener que restartear N procesos diferentes y cosas así.
+
+Voy a ponerlo en los servers de testing del trabajo a ver como se porta y si todo sale bien pasarlo a producción :).

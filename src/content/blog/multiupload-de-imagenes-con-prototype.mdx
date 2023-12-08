@@ -1,0 +1,20 @@
+---
+title: 'Multiupload de imágenes con Prototype'
+description: ""
+pubDate: 2008-08-27
+redirect_from: 
+            - https://gazer.com.ar/2008/08/26/multiupload-de-imagenes-con-prototype/
+categories: "javascript, Programación, prototype, ruby on rails, upload"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Desde hace unos días que estoy haciendo un widget que soporte upload de múltiples archivos para una aplicación web. No fue fácil el comienzo pero despues de varias horas (unas 8 hasta este momento) ya va tomando forma.
+
+Para poder trackear el upload de cada archivo utilizo [apache_mod_upload_progress](http://drogomir.com/blog/2008/6/18/upload-progress-bar-with-mod_passenger-and-apache), un genio "Drogomir" :). Para compilarlo en OSX tuve algunos problemas ya que apache2 esta compilado en x86_64 y el default del apsx es x86 pero googleando se encuentra fácil como pasarle el parámetro al gcc. Lo otro que necesitamos tener instalado es mod_rails y apache 2.2. Cuando termine el código y lo publique estará todo explicado en detalle :).
+
+El segundo problema grande fue el formulario. Para hacer el upload lo que hago es crear un iframe oculto y cambiar el target del formulario a ese frame (de esta menera si no tenemos javascript la aplicación degrada automáticamente al upload de imagenes individuales y el usuario no se entera), pero claro, necesitaba tener múltiples input:file, uno por cada archivo a subir. De ponerlos todos juntos tendríamos un POST super gigante que no era lo que se buscaba ya que no podría trackear cada upload por separado.
+
+La solución fue, cada vez que se selecciona un archivo sacar el INPUT del form y guardarlo en un array. El espacio vacío se reemplaza con un nuevo INPUT y como todo es tán rápido, uno no se da cuenta. El problema llegó cuando terminaba el primer archivo, tenía que volver a agregar el siguiente file al formulario y hacer otra vez el submit. Pero si uno llama \$(form).submit() desde javascript, el callback onSubmit no es ejecutado (defecto de las implementaciones de todos los navegadores que probé y parece que no va a cambiar) por lo que no era útil.
+
+La solución finalmente fue simular el click enel botón enviar con un simple \$(submit_button).click() que resuelve el problema anterior. Les dejo el video para que lo disfruten :).
+
+httpv://www.youtube.com/watch?v=7PqZg_1Pi1w

@@ -1,0 +1,16 @@
+---
+title: 'Webada'
+description: ""
+pubDate: 2005-03-07
+redirect_from: 
+            - https://gazer.com.ar/2005/03/07/webada/
+categories: "Programación"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Bien, tengo mucho que decir, poco tiempo para hacerlo ahora, así que lo haré después :-). Simplemente quiero publicar este simple script hecho en Perl que hice para pasar a animaciones GIF las secuencias de fotos que saca mi cámara.
+
+Lo que hace es descomponer la foto en sus 16 cuadros y crear un GIF animado. Por ejemplo, [esta](/img/test.jpg) foto pasa a ser esta [animación](/img/test.gif) (es pesadita, 1.5Mb) y por [acá](/img/lucarella.gif) otro ejemplo. Tengo que agregarle algunas opciones para que sea más divertido usarlo, pero ya vendrán más adelante :-) Muchas gracias a mis amigos Luca y Mazzi de [Mazziblog](http://www.mazziblog.com.ar) por servir de modelos para el experimento :-P
+
+Necesitarán : Perl 5.8.x y libgd-gd2-perl (una versión >= 2.1 para tener soporte de GIF). Las veriones viejas de GD no traían soporte de GIF por el problemas de la patente del algorítmo de compresión, ya vencida.
+
+Modo de uso : `#>./animation.pl imagen_original salida.gif`

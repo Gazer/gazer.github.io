@@ -1,0 +1,109 @@
+---
+title: 'Mono Internal Calls'
+description: ""
+pubDate: 2008-11-11
+redirect_from: 
+            - https://gazer.com.ar/2008/11/11/mono-internal-calls/
+categories: "Mono, Tesis"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Para mi tesis una de las cosas que tenía que lograr era pasar datos desde una aplicación escrita en C# (en realidad en cualquier lenguaje soportado) y el JIT. No quiero entrar en mucho detalle del por qué tengo que hacerlo ni cómo (porque la verdad esto último todavía no lo tengo resuelto :P).
+
+Empezando a investigar caí en [Embedding Mono](http://www.mono-project.com/Embedding_Mono), un articulo donde explican cómo embeber Mono en tu aplicación, por ejemplo para permitir plugins en .NET. El artículo tiene poco que ver con lo que yo estoy haciendo, pero me orientó en mi tarea.
+
+Con Mono tenemos dos formas de ejecutar código nativo : P/Invoke e Internall Calls. El primer método es bastante usado para hacer wrappers de bibliotecas por lo simple que resulta usarlo, además de agregar algunos chequeos en la conversión de datos entre ambos mundos. El segundo es más bien el que me interesa a mi, ya que da un control más de bajo nivel y tiene menos _overhead_.
+
+La forma de declarar en una clase de C# que un método está implementado en C es declarar un método externo y aplicarle un _Attribute_ para marcarlo como Internal Call. No encontré que otro tipo de métodos externos existe, por lo que no entiendo bien por qué hay que poner ambas cosas :
+
+```
+using System;
+using System.Runtime.CompilerServices;
+
+class Hello {
+  [MethodImplAttribute(MethodImplOptions.InternalCall)]
+  extern static string Sample ();
+}
+```
+
+Y por otro lado debemos decirle a la VM qué método nativo es el que se debe ejecutar :
+
+```
+/* Somewhere in a C program */
+mono_add_internal_call ("Hello::Sample", sample);
+```
+
+Con eso en general basta y funciona. Pero ... siempre hay un pero :). Preguntando por IRC me comentaron que esto está pensando, justamente, para los que quieren embeber el runtime de Mono en su aplicación, y no para extender la VM. En mi caso que necesito extender la _Common Object Runtime Library_ (corlib.dll) y la forma "correcta" sería entonces como sigue a continuación.
+
+Declarar una Internal Call (ICALL) que exista desde el inicio no fue tan tan trivial como parecía. Para empezar tuve que navegar entre muchos macros y un código en C poco documentado :).
+
+Finalmente entendí lo que debía hacer y el resultado fue agregar el siguiente código en el archivo `icall-def.h` :
+
+```
+/* mono/metadata/icall-def.h */
+/* Debe estar ordenado alfabeticamente */
+ICALL_TYPE(MESSAGE, "System.Message.Message", MESSAGE_1)
+ICALL(MESSAGE_1, "DefinePattern", icall_System_Message_DefinePattern)
+```
+
+Al principio lo definí al final de todo, para mantener separado mi código del de Mono, pero cuando ejecuté por primera vez mi ejemplo se quejaba que "System.Message.Message" debía estar después de "System.Buffer". Investigando un poco encontré que hacen una búsqueda binaria para los métodos internos que son parte de la VM y por eso el requerimiento de estar ordenado.
+
+Al parecer la diferencia con el primer método es que usa un vector estático (que se crea con los macros) y cuando llamamos a `mono_add_internal_call` usa una [GHashTable](http://library.gnome.org/devel/glib/stable/glib-Hash-Tables.html). La ventaja del array estático es que todo se resuelve en tiempo de compilación, cuando con el hash es todo en runtime.
+
+El macro ICALL_TYPE nos permite empezar a definir un tipo que va a tener una ICALL, teniendo que especificar en el segundo parámetro el nombre completo (es decir, con el namespace) de la clase. El tercer parámetro es el nombre de la primer definición de los métodos que tiene esta clase.
+
+Con ICALL luego definimos para cada método, que función debe ejecutarse en C, siendo en este caso :
+
+```
+void icall_System_Message_DefinePattern(MonoAppDomain *ad, MonoString *pattern)
+{
+  char *str = mono_string_to_utf8 (pattern);
+  g_print ("New pattern Defined : %sn", str);
+}
+```
+
+Para poder usar esto desde C# agregué un namespace a System, algo muy tonto y simple a puros efectos de ver si andaba. Para eso agregué el archivo `mcs/class/System/System.Message/Message.cs` con el siguiente código :
+
+```
+#if NET_2_0
+using System;
+using System.Runtime.CompilerServices;
+
+namespace System.Message
+{
+  public class Message
+  {
+    public Message (string p)
+    {
+      DefinePattern (p);
+    }
+
+    [MethodImplAttribute (MethodImplOptions.InternalCall)]
+    internal extern void DefinePattern (string pattern);
+  }
+}
+#endif
+```
+
+Me queda todavía la duda de la diferencia exacta de éste método y el explicado en el artículo, ya que yo estoy declarando mi método como "internal extern" y no solamente "extern". El "internal" salió por prueba y error mirando métodos de otras clases y ya veré de preguntar cuál es la diferencia exacta entre ambos casos.
+
+Una vez compilada e instalada la nueva VM y compilado el siguiente ejemplo :
+
+```
+using System.Message;
+public class Test
+{
+  static public void Main(string [] args)
+  {
+    Message m = new Message("void Test* (*)");
+    System.Console.WriteLine("Test Done");
+  }
+}
+```
+
+Obtuve lo esperado y "solo" tuve que pelear 6hs :D
+
+```
+gazer@Dana:~/src/ejemplos$ mono Test2.exe
+New pattern Defined : void Test* (*)
+Test Done
+```

@@ -1,0 +1,30 @@
+---
+title: 'Filtrando datos con jQuery'
+description: ""
+pubDate: 2010-06-25
+redirect_from: 
+            - https://gazer.com.ar/2010/06/25/filtrando-datos-con-jquery/
+categories: "html, javascript, jquery, Programación"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Filtrar elementos dentro de una lista o una tabla para realizar una búsqueda inline con jQuery es bastante simple, solo basta entender un poco donde va cada cosa. La función en cuestión que nos permite hacer esto es [filter()](http://api.jquery.com/filter/) que junto con un poco de trabajo para hacer un deep-search dentro del DOM nos da esta funcionalidad.
+
+Por ejemplo si queremos mostrar los elementos de una lista que coinciden con una búsqueda deberíamos hacer algo como :
+
+```
+  v = 'some word';
+  /* Ocultamos todos los LI */
+  $('#list ul li').hide();
+  /* Filtramos y mostramos los que coinciden */
+  $('#list ul').contents().filter(function () {
+    return innerSearch(this, v);
+  }).show();
+```
+
+La función innerSearch la pueden ver en el ejemplo, y básicamente hace un recorrido por el DOM y devolviendo true en aquellos tags donde su contenido de texto contiene el patrón buscado.
+
+Eso nos da muchas posibilidades, ya que por ejemplo en lugar de un simple show se podría aplicar alguna clase CSS para resaltar, modificar el color o lo que se les pueda ocurrir.
+
+Por razones de _performance_ no es muy útil para un DOM muy complejo, pero para el [caso](http://club.speedy.com.ar/concursos/llevate-dos-entradas-para-el-avant-premiere-de-brigada-a/ganadores) donde yo lo necesité funciona aceptablemente bien.
+
+Dejo [un ejemplo](https://www.gazer.com.ar/wp-content/uploads/2010/06/jquery_filter.html) completo con filtrado en listas y tablas.

@@ -1,0 +1,76 @@
+---
+title: 'XML HTTP con JavaScript'
+description: ""
+pubDate: 2005-04-11
+redirect_from: 
+            - https://gazer.com.ar/2005/04/11/xml-http-con-javascript/
+categories: "Programación"
+heroImage: '/blog-placeholder-about.jpg'
+---
+En los últimos meses he tenido que trabajar mucho con Javascript para poder hacer las pantallas del sistema que desarrollo en el trabajo. La idea siempre es tener la menor cantidad de recargas de página posible, por lo menos visibles para el usuario.
+
+Fue por eso que en un momento necesité el _find as you type_ en una caja de texto, y buscando como lo hacía Google pude implementarlo sin problemas.
+
+Luego necesité un poco más, así que me puse a investigar. La solución no es 100% portable, pero solo me interesaba que funcione con IE y Firefox.
+
+Lo primero que vamos a necesitar es el objeto que se encarga de la comunicación. Como varía con el navegador, crearemos una función :
+
+```
+function getXMLHTTP(){
+  var A=null;
+  try{
+    A=new ActiveXObject("Msxml2.XMLHTTP")
+  }catch(e){
+    try{
+      A=new ActiveXObject("Microsoft.XMLHTTP")
+    } catch(oc){
+      A=null
+    }
+  }
+  if(!A && typeof XMLHttpRequest != "undefined") {
+    A=new XMLHttpRequest()
+  }
+  if (!A) {
+    alert ('No XML-HTTP Capable Browser!');
+  }
+  return A
+}
+```
+
+La función va probando crear el objeto XML HTTP. Si fallan todos los métodos, lanza una alerta y retorna NULL.
+
+Para obtener datos de un script remoto es muy simple, el siguiente código lo muestra :
+
+```
+function saludar () {
+  nombre = document.getElementById('nombre');
+ _xml = getXMLHTTP();
+  if (_xml) {
+    _xml.open("GET", "/saludar.php?nombre="+nombre.value, true);
+    _xml.onreadystatechange=function() {
+      if(_xml.readyState==4&&_xml.responseText) {
+        if(_xml.responseText.charAt(0)!="< "){
+          eval(_xml.responseText)
+        }
+      }
+    }
+    _xml.send(null);
+  } else {
+    alert('XML HTTP NOT SUPPORTED');
+  }
+}
+```
+
+Bien, analicemos lo que hace nuestra función. Lo primero es obtener el INPUT del formulario donde el usuario ingresa el nombre (estoy suponiendo que existe). Luego de obtener el objeto XML HTTP y verificar que existe, abrimos una conexión GET al URL especificado (tengan en cuenta que esto todavía no realiza el GET, solo setea lo que vamos a hacer).
+
+Lo importante viene ahora en `_xml.onreadystatechange=function()`. Lo que hacemos es asignar al slot _onreadystatechange_ una función que se encarga de recibir los datos que llegan. En nuestro caso, la función verifica el estado, para ver si fue exitoso, y saltea las líneas que comienzan con "&lt; ", quedandose solo con el contenido plano, el cual pasa a la función eval que ejecuta ese string como si fuera código JavaScript.
+
+Por último, para realizar la acción, llamamos al método Send.
+
+Por el lado de PHP, necesitamos el script saludar.php :
+
+```
+  echo "alert('Hola ".$_REQUEST['nombre'].", como va?');";
+```
+
+Pueden probar este ejemplo ~~acá~~. La verdad es que da para jugar mucho. También les recomiendo el código de Google para hacer el autocomplete, que es muy ingenioso (pueden encontrarlo googleando en varios blogs).

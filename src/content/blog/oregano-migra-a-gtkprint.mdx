@@ -1,0 +1,33 @@
+---
+title: 'Oregano migra a GtkPrint!'
+description: ""
+pubDate: 2006-09-06
+redirect_from: 
+            - https://gazer.com.ar/2006/09/06/oregano-migra-a-gtkprint/
+categories: "cairo, Oregano, Programación"
+heroImage: 'https://www.gazer.com.ar/wp-content/uploads/2006/09/oreganoprint.thumbnail.png'
+---
+Si señores, ya era hora de tener un motor de impresión como la gente :-). Luego de varias consultas por parte de mis _beta-testers_ me decidí migrar el soporte de impresión a la nueva API de impresión de [Gtk+](http://www.gtk.org/).
+
+La migración fue simple, por lo menos para dar un soporte básico. Lo primero que hice fue borrar print.\[h|c] que tenían el código de soporte de GnomePrint. Luego portá las funciones de modelo a [Cairo](http://www.cairographics.org/) (en lugar de usar las viejas API de Art) y por último le agregué el código para que se abra el diálogo de impresión.
+
+[](https://www.gazer.com.ar/wp-content/uploads/2006/09/oreganoprint.png "oreganoprint.png")
+
+[](https://www.gazer.com.ar/wp-content/uploads/2006/09/oreganoprint.png "oreganoprint.png")
+
+[![oreganoprint.png](https://www.gazer.com.ar/wp-content/uploads/2006/09/oreganoprint.thumbnail.png)](https://www.gazer.com.ar/wp-content/uploads/2006/09/oreganoprint.png "oreganoprint.png")
+
+No se ilusionen mucho que faltan bastantes cosas por hacer antes de que tenga alguna utilidad :-). Una ventaja de esta migración es que ya tengo el código en el modelo para poder exportar el esquemático a un PNG, PDF, PS, SVG o cualquier otro backend que soporte Cairo, cosa que creo que varios van a agradecer :-).
+
+Por ahora no voy a subir los cambios al repositorio principal, ya que esto me obliga a depender de Gtk+ 2.10, recién salida del horno, por lo que voy a mantener un branch privado hasta completar el código.
+
+Mi pequeño TODO :
+
+- Agregar Labels de los componentes y textos.
+- Impresión Color y B&W (Qué colores te gustarían???!!)
+- Rótulo y orientación default de la página. (El tamaño es configurable y el circuito se adapta a la página)
+- Si ves algo que debería soportar, y no está en esta lista, dejó un comentario :-)
+
+**UPDATE:**
+
+Ya tengo funcionando el diálogo y la código para exportar el esquemático. Actualmente hay soporte (dependiendo si la versión de Cairo instalada lo soporta) para PDF, PS, [PNG](/img/uploads/2006/09/OreganoExport.png) y [SVG](/img/uploads/2006/09/OreganoExport.svg) (el Inkscape no lo abre bien, pero otros programas si). El ónico que anda realmente bien es el de PNG, el resto tiene varios problemas que sospecho que son de Cairo (ya sean bugs o que me está faltando llamar alguna función).

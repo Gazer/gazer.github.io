@@ -1,0 +1,16 @@
+---
+title: 'Más Plot de Oregano'
+description: ""
+pubDate: 2004-11-22
+redirect_from: 
+            - https://gazer.com.ar/2004/11/22/mas-plot-de-oregano/
+categories: "Oregano"
+heroImage: 'https://www.gazer.com.ar/wp-content/oregano_plot_selection.png'
+---
+Finalmente la herramienta de selección para el zoom en la ventana de ploteo anda como quería, solo era un error mío, ya que Cairo usa los colores RGB(Red Green Blue) en un rango de 0 a 1 y yo los estaba poniendo de 0 a 255 :-P. Una cosa que faltaría hacer es seguir el color del tema de Gtk. El Resultado :
+
+![(Plot Selection Tool)](https://www.gazer.com.ar/wp-content/oregano_plot_selection.png)
+
+Ya que está avanzando bien, y cairo lo soporta muy bien, agregué un lindo "Save PNG" en el menú de la ventana para probar y .... Oregano exporta las gráficas a PNG :-) ... esta semana completaré algunos detalles (como detectar que libcairo tenga soporte para PNG(Portable Network Graphics), cambiar el tamaño cuando se guarda, agregar otros backends como PS, tal vez fondo transparente para los PNG, etc). Un ejemplo de un PNG realizado con Oregano :
+
+![Oregano Save PNG Feature!](https://www.gazer.com.ar/wp-content/oregano_save_png.png)

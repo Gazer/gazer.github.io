@@ -1,0 +1,18 @@
+---
+title: 'De regreso ...'
+description: ""
+pubDate: 2005-01-07
+redirect_from: 
+            - https://gazer.com.ar/2005/01/07/de-regreso/
+categories: "General"
+heroImage: '/blog-placeholder-about.jpg'
+---
+## Vida
+
+Estoy recién llegadito a Buenos Aires, aunque amargado por el calor, ya me estoy por ir a trabajar y empezar otro año a todo trapo. Esperemos que el verano acompañe y no nos mate el calor :-)
+
+## gnome_settings\_\*
+
+Respondiendo a la pregunta de [marga](http://wiki.lug.fi.uba.ar/tiki-view_blog.php?find=&blogId=1&offset=0&sort_mode=created_desc) sobre [qué funcionalidad pierde](http://wiki.lug.fi.uba.ar/tiki-view_blog_post.php?blogId=1&postId=241) al sacar las líneas _gnome_settings_keyboard_xkb_init (client);_ y _gnome_settings_keyboard_init (client);_, si no me equivoco, lo que hacen esas 2 funciones son registrar callbacks para que cuando uno entra al panel de control y cambia algún parámetro del teclado, estas son re-leídas para que la próxima aplicación que consulte tenga el valor actualizado y no tener que reiniciar todo Gnome para poder usar los cambios. En el caso de _keyboard_init_ es para los parámetros de repeat, rate, etc y el de _xkb_ para el layuot y esas yerbas.
+
+Espero que se entienda :-)

@@ -1,0 +1,20 @@
+---
+title: 'Puppet  y not trusted hosts'
+description: ""
+pubDate: 2008-12-16
+redirect_from: 
+            - https://gazer.com.ar/2008/12/16/puppet-y-not-trusted-hosts/
+categories: "deploy, General, puppet"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hoy estaba terminando de configurar [Puppet](http://reductivelabs.com/trac/puppet/) y me empezó a saltar el siguiente error en los clientes :
+
+`Certificates were not trusted: hostname was not match with the server certificate`
+
+Buscando un poco llegué a [esta](http://reductivelabs.com/trac/puppet/wiki/RubySSL-2007-006) página donde explican el motivo y es que al no tener un [FQDN](http://en.wikipedia.org/wiki/FQDN) para mi _puppetmaster_ la biblioteca de Ruby lanza una excepción que hace que falle.
+
+Por default el puppetmaster pone el nombre del certificado como "puppetmaster " (Debian Etch) y claro, el cliente tiene configurado `server=192.168.x.y` por lo que no coincide.
+
+La solución que hizo que todo ande fue editar el `/etc/puppet/puppet.conf` en el servidor maestro y dentro de la sección `[puppetmasterd]` agregar `certname=192.168.x.y` de amanera que ahora sí ambos hablan de lo mismo :).
+
+No se que tan lindo/feo es tener una IP como nombre de certificado, pero anda.

@@ -1,0 +1,54 @@
+---
+title: 'Usando Rails.cache en 2.1.x'
+description: ""
+pubDate: 2008-10-22
+redirect_from: 
+            - https://gazer.com.ar/2008/10/21/usando-rails-cache/
+categories: "cache, observer, Programación, ruby on rails"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Para uno de los sitios que tenemos montados llegó la hora de optimizar algunas partes para descargar la DB un poco. Lo primero (y por ahora único :P) que se hizo fue cachear la instancia que representa a la Etapa actual del juego en memoria, para así no cargarla en cada request.
+
+El código original era :
+
+```
+class Stage  ["start_at = ?", t, t])
+  end
+end
+```
+
+y lo cambiamos para usar el nuevo sistema de cache de Rails 2.1.x que realmente fue simplificado. Hay varios sitio donde hablan sobre el cache en 2.1, les recomiendo mirar el [screencast](http://railscasts.com/episodes/115) de RailsCasts y [este](http://ryandaigle.com/articles/2007/12/19/what-s-new-in-edge-rails-pluggable-controller-caching) y [este](http://thewebfellas.com/blog/2008/6/9/rails-2-1-now-with-better-integrated-caching) post.
+
+El código modificado quedó como se muestra a continuación.
+
+```
+# config.environment.rb
+config.cache_store = :mem_cache_store
+
+# app/models/stage.rb
+class Stage  ["start_at = ?", t, t])
+      Rails.cache.write('stage_current', @current)
+    end
+    @current
+  end
+```
+
+La condición del `if` es necesaria por dos motivos : la primera por si el cache fue limpiado y la segunda para invalidar el valor guardado actualmente si la etapa eterminó, para que la nueva etapa pase a ocupar el cache.
+
+En este caso estamos usando MemCache como CacheStore ya que se comparte entre más de un webserver y simplifica expirar el cache.
+
+Lo único que resta es expirar el cache en caso de que cambie el modelo, que además de la fecha de finalización contiene textos que son usados en la web (como las bases y condiciones, premios, etc). Para eso creamos un Observer que se encargue de eso cuando una etapa es guardada y además es la etapa actual (si no, no tiene sentido hacer nada) :
+
+```
+# app/models/stage_observer.rb
+class StageObserver < ActiveRecord::Observer
+  def after_save(stage)
+    Rails.cache.delete('stage_current') if stage.is_current?
+  end
+end
+
+# config/environment.rb
+config.active_record.observers = :stage_observer
+```
+
+Con esto bajó bastante el uso de la DB (prácticamente no se puede hacer nada en el sitio sin consultar la etapa actual). Ahora tengo que ver que le pasa a la DB que a veces respondes después de 3 segs :S, pero eso ya escapa a programar :).

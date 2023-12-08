@@ -1,0 +1,100 @@
+---
+title: 'Volviendo a PHP'
+description: ""
+pubDate: 2013-03-26
+redirect_from: 
+            - https://gazer.com.ar/2013/03/26/volviendo-a-php/
+categories: "php, Programación, prototype"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hace fácil 5 años que no hago nada serio en PHP, empezando desde cero. Mayormente me ha tocado retocar cosas andando o parchar bugs boludos. Sin embargo el otro día tuve que hacer un demo chiquitito en PHP. El principal limitante era el tiempo, por lo que tenía que hacerlo rápido.
+
+Al principio intenté el viejo HTML+PHP all-in-one con ifs $\_GET, $\_POST, etc. Una locura, no podía avanzar. Mi mente me decía "esto va en el controlador, esto en el view" :D. Borre todo y empecé de nuevo. Pensé dos segundos y dije "tiene que haber algo". No, CakePHP no es ese "algo". Era mucha config al pedo, bloated y cada vez que tuve en mi poder un site de Cake para poner en producción terminé a los cabezazos.
+
+Googleando me topé con [SlimFramework](http://www.slimframework.com/) un micro framework para hacer apps (el Sinatra de CakePHP :D ?) y la verdad que dije "ah, mirá, en php también se puede programar como al gente". No tiene ORM, solo un modo fácil de declarar rutas, con arguments y verbos REST (post, delete, put, etc) y un body para ejecutar la lógica.
+
+Los templates son modulares, podemos llamar a otro .php que genera HTML o usar HAML, Smarty (dios que alguien de de baja este proyecto :P) o armar el propio. Un hola mundo :
+
+```
+get('/hello/:name', function ($name) {
+    echo "Hello, $name";
+  });
+  $app->run();
+?>
+```
+
+Simple, no?. La [documentación](http://docs.slimframework.com/) está bastante completa y no tuve mayores drama en sacar andando el demo. Lo único que no me gustaba era que los "views" no podían tener un main template (al menos en la version básica de usar php como template language). Es decir, tenía que poner &lt;? require "header.php"; ?> &lt;? require "footer.php" ?> por todos lados, por lo que decidí implementar me propia "view" :
+
+```
+setTemplate($template);
+        extract($this->data);
+        ob_start();
+
+        $this->setTemplate("template_pre.php");
+        require $this->templatePath;
+
+        $this->setTemplate($template);
+        require $this->templatePath;
+
+        $this->setTemplate("template_post.php");
+        require $this->templatePath;
+
+        return ob_get_clean();
+    }
+}
+?>
+```
+
+Simplemente hago los 3 render y así tengo view con layout a'la Rails :P.
+
+El segundo punto a resolver era el acceso a la base de datos. Hoy en día laburar con mysql_query, mysql_fetch es inpensable, al menos para prototipado ;). Otra vez, googleando me topé con [Idiorm](https://github.com/j4mie/idiorm/), "A lightweight nearly-zero-configuration object-relational mapper and fluent query builder for PHP5", o sea, un [Arel](https://github.com/rails/arel) para PHP, super limiteado pero suficiente por el momento.
+
+Este ORM nos pemite encadenar condiciones y luego obtener objetos, manipularlos y guardarlos de nuevo :
+
+```
+$user = ORM::for_table('user')
+    ->where_equal('username', 'j4mie')
+    ->find_one();
+
+$user->first_name = 'Jamie';
+$user->save();
+```
+
+Si queremos más abstracción todavía el mismo autor implementó [Paris](https://github.com/j4mie/paris), una implementación de ActiveRecord sobre Idiorm. Yo en mi caso no la usé así que lo dejo a criterio del lector probarla.
+
+A modo de ilustrar como quedó mi demo, les comparti el método del index, que obtiene la lista de registros y hace un render del view acorde :
+
+```
+$app->get('/', function () use ($app) {
+  $contacts = ORM::for_table('contact')->find_many();
+  $app->render('home.php', array('contacts' => $contacts));
+});
+```
+
+Y la vista (recortada) :
+
+```
+<h1>Contactos</h1>
+
+
+    ...
+
+
+  data['contacts'] as $contact) { ?>
+
+    ...
+    <table class="table table-striped table-hover">
+  <tbody><tr></tr><tr>
+    <td>nombre ?></td><td>
+      <form action="/contacts/id ?>" method="POST" class="form-inline">
+        <a href="/contacts/id ?>/edit" class="btn">Modificar
+
+
+
+    </td>
+  </tr>
+
+</tbody></table>
+
+<a href="/contacts/new" class="btn btn-primary">Agregar</a>
+```

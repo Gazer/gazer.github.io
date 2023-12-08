@@ -1,0 +1,65 @@
+---
+title: 'Cada día más modernos ...'
+description: ""
+pubDate: 2005-04-25
+redirect_from: 
+            - https://gazer.com.ar/2005/04/25/cada-dia-mas-modernos/
+categories: "General"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hoy a la noche decidí instalar OpenOffice 1.1.4 en Ututo-e XS 2005 (ProOptimized Standar Version :-P) y, antes de arriesgarme a perder toda mi instalación me puse a mirar el script de instalación, y realmente cada vez que los veo, el proyecto se parece más a un cangrejo (van siempre para atrás :D).... Algunas perlitas de bash scripting (ni la gente de Sistemas Operativos de la facultad logra estos resultados :-D) :
+
+Acaso no lo tenía ya ?
+
+```
+mkdir /usr &>/dev/null
+```
+
+Seguridad es nuestro undécimo nombre :-P :
+
+```
+chmod -R 7777 /opt/OpenOffice.org/
+```
+
+Ahora, si yo selecciono _AMD \[Sempron - Athlon64 - Opteron]_ me va a instalar una libcstd++6 para i686 ?? : groso, al final tengo paquetes universales ... :-)
+
+```
+/usr/bin/wget -c https://$SERVIDOR/i686/libstdc++-6.tar.bz2 &>/dev/null
+if [ "$INSTALL" = "INSTALL" ];then
+tar -xvjpf libstdc++-6.tar.bz2 -C /
+fi
+```
+
+_Optimizamos todo para cada procedor_: excepto cuando no tenemos ganas :-)
+
+```
+if [ "$RES" = "i486" ];then
+/usr/bin/wget -c https://$SERVIDOR/i486/libstdc++-v3-3.3.3-r1.tbz2 &>/dev/null
+/usr/bin/wget -c https://$SERVIDOR/i486/libstdc++-v3-3.3.3-r1.tbz2.sig1 &>/dev/null
+/usr/bin/wget -c https://$SERVIDOR/i486/libstdc++-v3-3.3.3-r1.tbz2.sig2 &>/dev/null
+else
+/usr/bin/wget -c https://$SERVIDOR/i686/libstdc++-v3-3.3.3-r1.tbz2 &>/dev/null
+/usr/bin/wget -c https://$SERVIDOR/i686/libstdc++-v3-3.3.3-r1.tbz2.sig1 &>/dev/null
+/usr/bin/wget -c https://$SERVIDOR/i686/libstdc++-v3-3.3.3-r1.tbz2.sig2 &>/dev/null
+fi
+```
+
+Quack!
+
+```
+echo Optimizando acceso a librerias dinamicas
+echo Optimizing access to dynamic libraries
+echo " "
+/usr/sbin/prelink -amR
+```
+
+También sabemos optimizar su ancho de banda! (bajando todo de nuevo :-D) :
+
+```
+rm -f gnome-splash.png
+rm -f ututo-emergence.png
+/usr/bin/wget -c  &>/dev/null
+/usr/bin/wget -c  &>/dev/null
+```
+
+Bueno, hasta acá llegé, el sueño me está ganando :-) ... Este post va dedicado a todos aquellos que nacieron con sentido del humor :-)

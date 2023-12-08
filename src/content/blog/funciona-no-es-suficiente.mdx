@@ -1,0 +1,71 @@
+---
+title: '“Funciona” no es suficiente.'
+description: ""
+pubDate: 2016-01-13
+redirect_from: 
+            - https://gazer.com.ar/2016/01/13/funciona-no-es-suficiente/
+categories: "Agile, Android App Development, Metrics, Programación, Spanish"
+heroImage: '/img/uploads/2019/02/f215c-1zi4fcnwargme1ccjug8pig.jpeg'
+---
+![](/img/uploads/2019/02/f215c-1zi4fcnwargme1ccjug8pig.jpeg)
+
+No es raro en esta profesión, al revisar el trabajo de otro encontrarse con algo que no es del todo semánticamente correcto o que puede escribirse de mejor manera. Tampoco es raro que nos digan “pero así funciona”. [Funciona no es, o no debería al menos, ser suficiente](http://juanmanueldehoyos.com/why-it-just-works-is-not-enough/).
+
+En el desarrollo de software existen muchos otros factures a considerar a futuro que no siempre tienen que ver con el funcionamiento actual de la aplicación : ¿el código se entiende?, ¿es eficiente?, ¿es fácil de extender si debemos agregar funcionalidades?. Quizás el aspecto más importante desde el punto comercial es que tanto cuesta corregir un error detectado, ya que en códigos escritos de manera pobre, corregir un error y la posibilidad que aparezca uno nuevo suele ser mayor en los casos donde no se tiene una buena disciplina.
+
+En las siguientes secciones trataré de comentar lo que me ha servido a lo largo de los años y qué herramientas podemos utilizar. Algunos ejemplos serán específicos de Android, pero se pueden extrapolar a cualquier tecnología.
+
+---
+
+#### Métricas, métricas y más métricas
+
+Un aspecto importante para saber dónde estamos parados y hacia dónde vamos es la utilización de métricas en nuestro código. Estas métricas pueden ser muy variadas, desde contar a mano cuántas líneas de código hay por archivo, clase o método, hasta medir la [complejidad ciclomática](https://es.wikipedia.org/wiki/Complejidad_ciclom%C3%A1tica) de nuestro código.
+
+Las métricas deben ser una herramienta que nos orienten, no que guíen nuestro desarrollo. Es decir, no deberían condicionar si o si la forma de escribir una porción de código porque la métrica da peor en ese caso.
+
+Esto hace que las métricas en si mismas no sean lo importante. Lo que nos debería importar es la tendencia de las mismas. Para poder medir tendencia entonces debemos poder consultar un histórico, por lo que con cierta regularidad deberíamos calcular esas métricas, anotarlas y ponerlas en un gráfico.
+
+Siempre que la tendencia sea negativa es un buen signo, que se mantenga no está mal. Si la curva crece con pendiente leve en un período corto y luego se estabiliza o baja no debería ser preocupante.
+
+Nuestros puntos de alarma deberán ser crecidas de más de un 30/40% de golpe entre una medición y otra. En general cuando hay picos de crecimiento es porque se está trabajando en alguna característica nueva y todavía no se empezó la etapa de estabilización. Lo importante es atacar el problema en ese momento y ver donde podemos mejorar.
+
+#### Automatización : la clave para no abandonar
+
+En la teoría esto de las métricas es fantástico. Hasta que llega nuestro Manager o Jefe y nos dice “_pero teníamos que salir ayer a producción_” y todo se va al diablo :). Escribimos lo que podemos para que “simplemente funcione”, no tomamos métricas y a veces ni probamos :).
+
+Luego de dos o tres veces que salimos del apuro nuestro código seguramente ya sea inmanejable y si calculábamos las métricas a mano perdimos historial importante para ver la evolución.
+
+La automatización de esta tarea es crucial, ya que nos permite ir calculando de manera automática y de manera periódica la salud del proyecto.
+
+Para automatizar es que existen los servidores de “Integración Continua” (o CI de sus siglas en inglés) como Jenkins o Travis. Estos son lo suficiente flexibles para ser configurados según nuestras necesidades y contienen cientos de plugins que nos harán la vida más fácil.
+
+En el caso de Jenkins podemos usar los plugins de “[Android Lint](https://wiki.jenkins-ci.org/display/JENKINS/Android+Lint+Plugin)” y “[Report violations](https://wiki.jenkins-ci.org/display/JENKINS/Violations)” para recolectar métricas y que nos haga un gráfico de la evolución de las mismas.
+
+Personalmente no me gusta que el proyecto se marque como “fallado” si las métricas no están en cero. Prefiero simplemente un aviso de que la aplicación está “inestable” y definir yo si tengo un problema o no.
+
+![](/img/uploads/2019/02/239af-1rgvborekx12dgsst6zo3za.png)
+
+Métricas en Jenkins
+
+Como punto final, queda definir en cada caso cada cuánto corres las métricas. Podría ser por hora, a una hora fija, por semana, etc. Dependerá del proyecto.
+
+Yo prefiero calcularla en “tiempo real” cada vez que alguien sube código al proyecto. Para eso solo debemos configurar el servidor de CI para que detecte que hay un nuevo código, lo baje y corra las métricas.
+
+#### Las Herramientas
+
+Para ir terminando por hoy vamos a mencionar algunas de las herramientas que podemos usar para medir métricas :
+
+- FindBugs : Java/Android. Detecta errores comunes y recomienda buenas prácticas
+- PMD : Java/Android/Objective-C. Analiza el código en busca de variables sin uso, condiciones que se pueden simplicficar, objetos que estamos creando de más, etc.
+- Lint : Existe un programa “[lint](https://es.wikipedia.org/wiki/Lint)” casi por cada lenguaje/framework que existe. Existen desde 1979, usalo :)!
+- Codenarc : Groovy/Grails. Permite analizar malas práticas, errores de estilo, etc.
+- Checkstyle : Java/Android. Chequeos básicos para escribir Java con buenas prácticas (nombres de variables, organización del código, etc).
+- Clang Static Analyzer : Objective-C/iOS. Similar a Checkstyle.
+
+#### Siempre se puede mejorar …
+
+Para cerrar, simplemente eso. Siempre se puede mejorar. Lleva tiempo? Al principio un poco, si. Pero una vez que el camino está sentado el proyecto avanza solo.
+
+A medida que veamos los warnings de las herramientas iremos recordándolas, entonces al escribir el código antes de todo ya lo haremos pensando en buenas prácticas, minimizando el problema desde el principio.
+
+Por último y no por eso menos importante, nuevamente decirles que estas herramientas deben ser una guía!, no deberíamos buscar el Santo Grial de tener en cero nuestras métricas, eso podría llevarnos a lugares peores que no tener métricas. Vean tendencias y saquen conclusiones :)

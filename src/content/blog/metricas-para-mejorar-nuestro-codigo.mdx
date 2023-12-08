@@ -1,0 +1,94 @@
+---
+title: 'Métricas para mejorar nuestro código'
+description: ""
+pubDate: 2016-11-24
+redirect_from: 
+            - https://gazer.com.ar/2016/11/24/metricas-para-mejorar-nuestro-codigo/
+categories: "Code Review, Groovy, Metrics, Programación, Spanish"
+heroImage: '/img/uploads/2019/02/92be5-1-nhsonlzxx0wcosr20kulw.png'
+---
+Unas de las tareas divertidas que me toca hacer durante el día es el _Code Review_ de varios proyectos. Es una práctica que utilizamos a diario en [Patagonian Tech](https://twitter.com/patagoniantech) porque nos permite ayudar a los más nuevos a crecer como programadores y a su vez a mantener los productos que desarrollamos para nuestros clientes con un nivel bajo de errores.
+
+![](/img/uploads/2019/02/92be5-1-nhsonlzxx0wcosr20kulw.png)
+
+Humor: posible métrica para evaluar el buen código.
+
+El otro día estaba haciendo un _review_ a uno de mis compañeros, el código no tenía falencias en su lógica, tampoco en su sintaxis. Luego de mirarlo una y otra vez me puse a pensar que “sonaba complicado”.
+
+El fragmento de código en cuestión es el siguiente :
+
+https://gist.github.com/Gazer/e12f6935bbdf405a97d5b045ff510544
+
+En la primera pasada no acote nada, pero luego de estar dando vueltas un rato por mi cabeza, algo comenzó a hacer ruido.
+
+Usualmente me gustan los códigos cortos, de pocas líneas, porque cada línea de código que agregamos es un potencial punto para introducir un bug. Pero no un bug hoy, uno a futuro, cuando otro programador pase y quiera tocar algo.
+
+En el ejemplo de arriba, ¿qué pasa si hay otro `Exercise` que tiene una unidad diferente de “minutos”? ¿Debo agregar otro `else if`?. ¿Qué pasa si esa misma lógica está en otro lado del sistema? ¿Tengo que buscar por todo el proyecto?; ¿cómo sabe el programador que debe hacer eso?; ¿qué pasa si escribo las constantes “(floor_count)” mal?.
+
+Como podemos ver, son muchos “qué pasa si”. Y cada uno es un potencial bug en la vida del proyecto.
+
+Pero antes de refactorizar, también deberíamos preguntarnos : ¿vale la pena refactorizar?, usualmente un refactor implica un cambio; un cambio implica que podemos romper algo; lo que implica que debemos probar todo a fondo; lo que se traduce en tiempo y el tiempo es dinero.
+
+![](/img/uploads/2019/02/0a622-105kfbmsh7z0b5exxqdzdla.jpeg)
+
+Afortunadamente podemos sacar varias métricas de nuestro código que nos permiten elegir qué código necesita más urgente un refactor que otro. Acá un resumen de las que me parecen que pueden ayudarnos.
+
+---
+
+#### Número de líneas
+
+Yo personalmente vengo del mundo de Ruby, donde un método siempre es bueno que sea corto, si es de una línea mejor, ya que es más simple con solo mirarlo que problemas podemos tener.
+
+La “[regla del pulgar](https://es.wikipedia.org/wiki/Rule_of_thumb)” para mi suele ser que lo más corto que cumpla su función. Pero si consideramos el código de arriba como la mínima expresión, nada debería cambiar, verdad?
+
+La realidad es que para apoyar esta teoría de contar la cantidad de líneas debemos apoyarnos en otras teorías, como ‘[Principio de responsabilidad única’](https://en.wikipedia.org/wiki/Single_responsibility_principle) y la ‘[Ley de Demeter](https://en.wikipedia.org/wiki/Law_of_Demeter)’.
+
+El primero dice que una clase debe ser responsable de hacer una sola cosa. La segunda habla de que debemos tener bajo acoplamiento entre nuestros componentes.
+
+#### Complejidad Ciclomática
+
+Esta métrica nos permite medir “que tan complejo” es nuestro programa, teniendo en cuenta las ramificaciones, bucles, etc. Obviamente cuanto menor es la complejidad, mejor nos va.
+
+Explicándolo de forma simple, la complejidad se calcula a partir de crear un grafo con la estructura del código y luego se puede calcular con una simple fórmula en base a la cantidad de nodos y aristas. Tambien hay herramientas que permiten calcular automáticamente la complejidad.
+
+En este caso concreto la complejidad es baja (da menor de 10) por lo que no sería la principal métrica para decidir que se merece un refactor.
+
+#### Número de entidades
+
+Esta métrica a mi me gusta para saber un poco el acople del método actual con el sistema en general. Básicamente lo que hago es contar cuántas clases intervienen en la solución del problema. En el caso de nuestro análisis tenemos 2 : `Exercise` y `ExerciseEntry`. ¿Es necesario tratar con las dos directamente?
+
+Basta con saber que `ExerciseEntry` está compuesto por un `Exercise` para que la respuesta sea clara y apoyándonos de nuevo en la “_Ley de Demeter_” seguramente la respuesta será que no.
+
+---
+
+### Refactorizando el problema
+
+Si miramos bien el código, el programa anterior se trata de transformar una lista en otra cosa. En esta transformación lo primero que se necesita es saber la unidad de medida. ¿Es responsabilidad de este “tranformador” calcular la unidad de la entrada de un ejercicio?; ¿O cada ejercicio debería saber que unidad tiene?
+
+La respuesta correcta es la segunda, ya que aplicamos el “_Principio de responsabilidad única_“. Lo más razonable es pasar la lógica para calcular la unidad a la clase `Exercise`. El primer refactor nos deja el código como sigue :
+
+https://gist.github.com/Gazer/b4f126a5a193577af089ca04fe1035e5
+
+El bloque que realiza la conversión se ve mucho más limpio ahora. Y es más fácil de revisar a simple vista si hay algún error. Además podemos probar con mayor claridad que la detección de la unidad de un ejercicio sea correcta y hasta podríamos agregar pruebas automatizados para prevenir errores futuros. También si analizamos la complejidad ciclomática de cada método por separado encontraríamos una disminución de esta métrica, siendo algo positivo.
+
+La “_Ley de Demeter_” por su lado nos dice que debemos tener ‘bajo acople’ entre los componentes. ¿Qué significa esto específicamente?. Supongamos que por algún refactor definimos que cada `ExerciseEntry` va a tener su propia unidad independientemente de lo que diga el `Exercise` asociado. El refactor va a ser complejo ya que debemos buscar por todo el código las llamadas anidadas y seguramente en algún lado va a quedar un `exerciseEntry.exercise.unit()` que en algún momento quedará como un bug.
+
+Para lograr bajo acople lo que debemos hacer es nunca saltear al intermediario, aun si eso hace que tengamos un método como “proxy”. En este caso la idea seria llamar simplemente a `exerciseEntry.unit()` quedando el código de la siguiente manera :
+
+https://gist.github.com/Gazer/b73eaed7a0fd98091651e393feaf1faa
+
+Con un poco de magia de Groovy podemos dejar las cosas un poquito más organizadas :
+
+https://gist.github.com/Gazer/9377ae32c97b4f644e79c04febcd4909
+
+Ahora es la parte donde van al principio del artículo y comparar cual de los dos es más claro, y cual creen que podría tener menos errores.
+
+El fragmento de código original de 17 líneas fue reducido a 7. El objetivo de este fragmento es muy claro ahora y ganamos dos métodos auxiliares que seguramente serán útiles en el futuro, ya que esas clases se utilizan en otros lados del sistema.
+
+---
+
+### Cerrando
+
+Podemos concluir que no solo debemos escribir el código que cumpla con lo pedido, también tenemos que escribir código que, sin llegar a ser críptico e inentendible, sea conciso y robusto, que resiste el tiempo y que minimice la posibilidad de que un tercero introduzca un bug.
+
+Es importante configurar herramientas como [GMetric](http://gmetrics.sourceforge.net/) en los sistemas de integración continua para atacar estos problemas antes de que pasen al olvido. Adicionalmente también continuar instruyendo y debatiendo en los _code reviews_ para seguir aumentando la calidad de nuestro software.

@@ -1,0 +1,37 @@
+---
+title: 'Refactoring de "Fat Methods" - Episodio 4'
+description: ""
+pubDate: 2008-12-01
+redirect_from: 
+            - https://gazer.com.ar/2008/12/01/refactoring-de-fat-methods-episodio-4/
+categories: "plugin, Programación, refactoring, ruby on rails"
+heroImage: '/blog-placeholder-about.jpg'
+---
+En la [última](https://www.gazer.com.ar/2008/10/30/refactoring-de-fat-methods-episodio-3/) entrega habíamos logrado separar las notificaciones del controlador. Una de las cosas que todavía me seguían molestando eran los métodos donde obtengo las direcciones de email, como por ejemplo :
+
+```
+@notifications = @match.players.select {|p| p.user.notify_new_match_comment? }.collect {|p| p.user.email}
+```
+
+Lo que busca esto es obtener los emails de los usuarios para notificar ante un evento dado (un nuevo partido creado, un nuevo comentario, una petición de amistad, etc). Me molesta principalmente porque se ven horribles mis controllers :).
+
+La respuesta que motiva este episodio llegó por casualidad. Intentando solucionar un bug que tenía en uno de los plugins que uso ([has_many_friends](http://agilewebdevelopment.com/plugins/has_many_friends), que es feo pero cómodo para un proyecto como este de prueba) vi algo que no conocía : las asociaciones (has_many, has_one, etc) aceptan un bloque donde podemos agregar funcionalidad extra.
+
+Entonces, por ejemplo, si yo quisiera que el ejemplo anterior pueda ser escrito como `@match.players.notificables` (si, el nombre no es de lo mejor, pero es a modo ilustrativo) simplemente debería agregar ese método como sigue :
+
+```
+class Match < ActiveRecord::Base
+  has_many :players  do
+    def notificables
+      collect {|p| p.user.email if !p.user.email.blank? && p.user.notify_new_match_comment? }
+    end
+  end
+end
+
+# Ejemplo de uso
+@notifications = @match.players.notificables
+```
+
+El método que agregamos trabaja directamente sobre la asociación, que en este caso es una colección de `Player`, por lo que el `collect` nos dará todos los emails de los usuarios que se anotaron al partido y tienen activa la opción de recibir notificaciones cuando alguien deja un comentario nuevo en ese partido.
+
+Los métodos que agregamos pueden aceptar parámetros también, con lo cual podría aceptar un symbol con el tipo de permiso a verificar y tener todos los emails de los usuarios para un tipo de notificación dada. Ahora si se hace un refactor de las opciones de notificación de los usuarios tenemos centralizada la lógica en los modelos en lugar de tenerla en los controladores u observers.

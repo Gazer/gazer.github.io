@@ -1,0 +1,117 @@
+---
+title: 'HTML5 : Guardar el contenido de  en el servidor'
+description: ""
+pubDate: 2010-04-13
+redirect_from: 
+            - https://gazer.com.ar/2010/04/13/html5-guardar-el-contenido-de-canvas-en-el-servidor/
+categories: "canvas, html, html5, javascript, Programación, ruby, Sinatra"
+heroImage: '/img/uploads/2010/04/image.png'
+---
+Hoy tenía ganas de hacer algo distinto (vamos, no quería trabajar :P) así que me puse a jugar con HTML5, entre otras cosas con el tag &lt;canvas> para poder dibujar. Luego de bajar varios ejemplos y tener un 'paint' andando lo que quería era guardar la imagen, y llegué a este [post](http://www.nihilogic.dk/labs/canvas2image/) donde el autor deja guardar en PNG, JPG hasta incluso en BMP el contenido del canvas.
+
+Pero que el usuario se pueda guardar la imagen no era mi idea, era más bien guardarle en el servidor. Por ejemplo para hacer una firma digital y usarla después en el sitio para firmar los posts como si fueran documentos :P.
+
+Al principio pensé que iba a ser _super_ complicado, pero me encontré que todo fue mucho más fácil de lo que imaginé. Así que vamos por partes.
+
+Vamos a empezar por el server. Como era muy poco código para este ejemplo, hice una aplicación en [Sinatra](http://www.sinatrarb.com/) que me permite mostrar un canvas y luego hacer un POST con los datos. Es ideal en este caso, ya que el server queda de tan solo unas 20 líneas de código :
+
+```
+require 'sinatra'
+require 'RMagick'
+
+get '/' do
+   erb :index
+end
+
+post '/' do
+  # Ya completaremos ...
+end
+```
+
+Como se puede ver tenemos una vista en el root y el POST lo manejamos también en la raiz. Para procesar la imagen decidí usar la única gema que conozco, RMagick, que buscando en la documentación de ImageMagick me [encontré](http://www.imagemagick.org/script/formats.php) con grata sorpresa que sale leer 'Base64-encoded inline image' , que resulta que es justo el formato en que se obtienen los datos desde el canvas :). La única diferencia es que hay que preceder el string con 'inline:' y ya estamos, nuestro método POST queda así :
+
+```
+post '/' do
+  data = 'inline:' + request.body.read
+
+  begin
+    image = Magick::Image.read(data).first
+
+    image.write('image.png')
+    "alert('Image saved successfully')"
+  rescue
+    "alert('Image format not recognized')"
+  end
+end
+```
+
+Habría que revisar la documentación y bugs de ImageMagick para ver que tipos de implicancia puede llegar a tener en la seguridad del sitio o del sistema, pero son cosas que no vienen al caso :).
+
+La vista (reducida para el ejemplo) puede resumirse en el siguiente HTML :
+
+```
+
+    This text is displayed if your browser does not support HTML5 Canvas.
+
+
+
+```
+
+Y un poco de javascript :
+
+```
+
+
+  $(function () {
+    $("input").click(function () {
+      // jQuery todavía no habla bien con HTML5, hack para
+      // no usar un plugin.
+      var c = $("#example").get(0);
+      $.post('/', c.toDataURL(), null, "script");
+    });
+
+    // Un dibujito estático para probar
+    var example = document.getElementById('example');
+    var context = example.getContext('2d');
+    context.fillStyle = "rgb(255,0,0)";
+    context.fillRect(30, 30, 50, 50);
+  })
+```
+
+Y ya estamos, al presionar el botón se envían los datos de la imagen dibujada, si está todo bien ImageMagick creará el archivo en el filesystem y por último devolverá algo de javascript para informar al usuario como salió todo. Obviamente si tuviéramos un sistema de usuarios en el server podríamos guardar la imagen para cada uno, pero de nuevo, no viene al caso.
+
+El resultado final :
+
+![](/img/uploads/2010/04/image.png "image")
+
+```
+$ identify -verbose image.png
+Image: image.png
+  Format: PNG (Portable Network Graphics)
+  Class: DirectClass
+  Geometry: 200x200+0+0
+  Resolution: 72x72
+  Print size: 2.77778x2.77778
+  Colorspace: RGB
+  Depth: 8/1-bit
+  Histogram:
+     37500: (  0,  0,  0,  0) #00000000 none
+      2500: (255,  0,  0,255) #FF0000 red
+  Page geometry: 200x200+0+0
+  Compression: Zip
+  Properties:
+    create-date: 2010-04-13T00:20:15-03:00
+    modify-date: 2010-04-13T00:20:15-03:00
+    signature: 0a42f3c85d6364e38f14dac554d26c62a90b84b06ac7f22264c9d964657ba8d6
+  Tainted: False
+  Filesize: 503b
+  Number pixels: 39.1kb
+  Version: ImageMagick 6.5.1-0 2009-08-27 Q16 OpenMP http://www.imagemagick.org
+```
+
+Probado en :
+
+- Chromium 5.0.372.0 (44042) Ubuntu
+- Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.9) Gecko/20100401 Ubuntu/9.10 (karmic) Firefox/3.5.9
+
+Código completo : [html5_canvas_submit](https://www.gazer.com.ar/wp-content/uploads/2010/04/html5_canvas_submit.zip)

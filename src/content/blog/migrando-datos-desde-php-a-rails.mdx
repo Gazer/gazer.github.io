@@ -1,0 +1,28 @@
+---
+title: 'Migrando datos desde PHP a Rails'
+description: ""
+pubDate: 2010-01-22
+redirect_from: 
+            - https://gazer.com.ar/2010/01/22/migrando-datos-desde-php-a-rails/
+categories: "active record, migracion, php, Programación, ruby"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Por esas cosas de la vida me encontré todo el día de hoy migrando datos viejos de un sistema hecho en PHP a uno hecho en Rails. Las cosas venían bastante simples definiendo modelos de ActiveRecord para las tablas de la base de datos vieja y reinsertando con modelos apuntando a las tablas nuevas. Pero ... siempre hay un pero.
+
+Resulta que el hermoso sistema anterior para evitar tener muchas tablas (o vaya a saber por qué) tenía en una parte un tabla donde cada field era un gran TEXT que contenía un array de PHP [serializado](http://php.net/manual/en/function.serialize.php).
+
+```
+class UserTextField  user = UserTextField.find(3)
+$> user.folders # => 'a:2:{i:0;s:4:"bkps";i:1;s:6:"listas";'
+```
+
+Justo cuando estaba por ponerme a parsear texto me encontré con [php-serialize](http://github.com/jqr/php-serialize) que permite serializar y deserializar estos string en cómodos tipos nativos de Ruby.
+
+El código final queda entonces algo como :
+
+```
+class UserTextField  user = UserTextField.find(3)
+$> user.folders # => ["bkps", "listas"]
+```
+
+Y la migración de datos pudo continuar sin problemas :).

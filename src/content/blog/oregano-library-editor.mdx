@@ -1,0 +1,18 @@
+---
+title: 'Oregano Library Editor!'
+description: ""
+pubDate: 2006-07-12
+redirect_from: 
+            - https://gazer.com.ar/2006/07/11/oregano-library-editor/
+categories: "Mono, Oregano, Programación"
+heroImage: 'https://www.gazer.com.ar/wp-content/uploads/2006/07/OreganoLibraryEditor.thumbnail.png'
+---
+Así como lo leen, ya estoy trabajando en un editor para las bibliotecas de componentes de [Oregano](http://oregano.gforge.lug.fi.uba.ar/). En principio para poder cambiar algunas que no me gustan mucho o que tienen detalles, después veré si la aplicación queda lo suficientemente _linda_ como para hacerla crecer :-).
+
+[![OreganoLibraryEditor.png](https://www.gazer.com.ar/wp-content/uploads/2006/07/OreganoLibraryEditor.thumbnail.png)](https://www.gazer.com.ar/wp-content/uploads/2006/07/OreganoLibraryEditor.png "OreganoLibraryEditor.png")Luego de una frustrada búsqueda de algún Canvas (no iba a repetir los errores del pasado y usar GnomeCanvas :-)) decidí hacer uno minimalista, que soporte las operaciones básicas que requiero : Agregar cosas, moverlas y rotarlas. Salvo esta última, las demás están andando, con soporte _Group_ y _UnGroup_
+
+Y si, como ya se pueden imaginar la aplicación está escrita en C#, con Gtk# y Cairo#. Como el _buildsystem_ depende enteramente de [Monodevelop](http://www.monodevelop.org/), no creo que libere código alguno por el momento. En la captura se puede ver el diseño de un componente místico, conocido como Futirifoken :-D
+
+**UPDATE:** Unos toque mágicos con el Stetic, un poco de magia de System.Xml.Serialization y un par de hacks para sacar la cosa más rápido y ...
+
+[![OreganoLibraryEditorWorking.png](https://www.gazer.com.ar/wp-content/uploads/2006/07/OreganoLibraryEditorWorking.png)](https://www.gazer.com.ar/wp-content/uploads/2006/07/OreganoLibraryEditorWorking.png "OreganoLibraryEditorWorking.png")

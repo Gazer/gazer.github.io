@@ -1,0 +1,41 @@
+---
+title: 'Parseando HTML desde Ruby'
+description: ""
+pubDate: 2008-11-20
+redirect_from: 
+            - https://gazer.com.ar/2008/11/20/parseando-html-desde-ruby/
+categories: "html, http, Programación, ruby"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Con todo este lío de la crisis mundial, corridas bancarias y demás en la oficina los días tranquilos jugamos a "Adiviná cuánto va a salir el dolay hoy". Como es muy molesto entrar a "Dolar hoy dot com" donde miramos el valor oficial del juego, me puse a armar un script para robarme el valor actual y así ir tirando el dato minuto a minuto.
+
+Siempre es una molestia tener que parsear HTML, sobre todo cuando es tan feo como el del sitio en cuestión, que no solo no tiene un solo class de CSS ni id, sino que usa el tag FONT, dios. Por suerte Hpricot está para ayudarnos :).
+
+[Hpricot](http://code.whytheluckystiff.net/hpricot/) es "a fast, flexible HTML parser written in C" con su interfaz a Ruby, obvio :). Hace cosas muy copadas, como por ejemplo agarrar un HTML, buscar todos los &lt;a> que tengan el class _custom_, o todos los P seguidos de un DIV seguidos de un IMG, etc. Podemos consultar por ID, borrar, agregarle class a las cosas que encontramos y muchas cosas más, útiles para manipular HTML.
+
+Lo primero que tuve que hacer fue saltear la "_protección_" del sitio, ya que para acceder a la página con las cotizaciones verifican que vengas del dominio principal. Un básico chequeo contra el HTTP_REFERER. Como suelo usar [open-uri](http://www.ruby-doc.org/stdlib/libdoc/open-uri/rdoc/index.html), a ésta le puedo pasar el referer que yo quiero enviar en el header, como cualquier biblioteca para manejar URIs que tenga auto-respeto :).
+
+Para encontrar los valores fue fácil. Mirando el HTML de la página se ve que el valor del dolar está dentro de un "div/font/b/font", por lo que solo tuve que buscarlo. Después hago un cleanup para sacarle un non-breaking space que me molestaba y los espacios que también quedan feos.
+
+Y eso es todo. Ahora puedo consultar el valor del dolar desde mi consola :). Seguramente hay miles de formas más cómodas de hacerlo, algún widget para Gnome, página que te de un RSS, etc, pero fue un lindo ejercicio.
+
+Dejo acá el script para el que quiera jugar un rato.
+
+```
+require 'rubygems'
+# gem install hpricot si no lo tienen instalado
+require 'hpricot'
+require 'open-uri'
+
+
+doc = Hpricot(open("http://dolarhoy.com/indexx.php", "Referer" => "http://dolarhoy.com/"))
+
+div = (doc/"div/font/b/font")[1]
+
+dolar = div.inner_html
+
+dolar = dolar.gsub(/[ |$]/, "")
+dolar.strip!
+
+puts "Dolar Hoy : $#{dolar}"
+```

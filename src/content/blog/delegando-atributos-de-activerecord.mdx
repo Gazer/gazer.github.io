@@ -1,0 +1,75 @@
+---
+title: 'Delegando atributos de ActiveRecord'
+description: ""
+pubDate: 2008-11-04
+redirect_from: 
+            - https://gazer.com.ar/2008/11/04/delegando-atributos-de-activerecord/
+categories: "active record, Programación, refactoring, ruby on rails"
+heroImage: '/blog-placeholder-about.jpg'
+---
+El otro día tratando de mejorar un modelo de una aplicación me topé con el problema de tener muchos atributos virtuales para poder acceder a atributos de un objeto relacionado y no caer en lo siguiente :
+
+```
+class Player < ActiveRecord::Base
+  belongs_to :user
+
+  def name
+    user.name
+  end
+
+  def email
+    user.email
+  end
+
+  # ... y varios más
+end
+```
+
+Esto no lo puedo evitar mucho ya que `Player` es una clase intermedia en una relación de N-M entre los usuarios y los partidos, y además contiene información necesaria para la lógica del modelo.
+
+Tampoco era muy feliz tener por todos lados _[Message Chains](http://sis36.berkeley.edu/projects/streek/agile/bad-smells-in-code.html#Message+Chains)_:
+
+```
+@player.user.name
+@player.user.email
+# etc ....
+```
+
+Una de las recomendaciones que se usan en estos casos es [Hide Delegate](http://www.refactoring.com/catalog/hideDelegate.html) para ocultarle al cliente de donde sale el dato realmente. Cabe aclarar que no siempre son un problema las llamadas encadenadas.
+
+Recordando el anuncio de Rails 2.2 noté que al final hablaba de un delegate que tenía un nuevo feature. Buscando un rato por google encontré [este](http://craigjolicoeur.com/blog/2007/05/activerecord-delegate-attributes/) post donde hablaba de un método delegate para hacer justamente esto que yo quería.
+
+Lo extraño, que también menciona el autor es que no está documentado en la [API](http://api.rubyonrails.org/) oficial de Rails aunque mirando el código veo que explica como usarla. Explícitamente dice :
+
+> Provides a delegate class method to easily expose contained objects' methods as your own
+
+En la documentación también aclara que es útil tanto para atributos propios como para asociaciones entre diferentes instancias de ActiveRecord. La realidad es que por cómo está implementada funciona para cualquier objeto ruby que se nos ocurra.
+
+El ejemplo con el que empezamos el post quedaría resumido a :
+
+```
+class Player  :user
+end
+```
+
+Quedando mucho más corto el código, por lo tanto más fácil de mantener.
+
+Tomando prestado los ejemplos del otro blog, también podemos hacer cosas con atributos que no son asociaciones, como por ejemplo una fecha :
+
+```
+# Forma abreviada
+class Content  :published_at
+end
+
+# Forma desglosada
+class Content  :published_at
+  delegate :month, :to => :published_at
+  delegate :day, :to => :published_at
+end
+
+# Podemos escribir
+@content.year
+
+# en lugar de
+@content.published_at.year
+```

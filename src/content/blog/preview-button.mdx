@@ -1,0 +1,58 @@
+---
+title: 'Preview button'
+description: ""
+pubDate: 2009-08-06
+redirect_from: 
+            - https://gazer.com.ar/?p=1178
+categories: "General"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Una de las primeras cosas que surgen cuando uno crea algún panel para administrar el contenido de un sitio es la necesidad de quien carga los datos sepa como van a ser visualizados. En general me ha tocado siempre gente "clicky" en ese puesto, por lo que no es fácil hacerles entender que "lo que pongas en fecha se va aca", "la imagen que subas se va a ver así y _asá_".
+
+Recientemente en un pequeño CMS un cliente lo que hacía era llenar un campo, ir a la página, ver que cambiaba, luego volver al admin, agregar más datos y ver si le iba gustando. Claramente no es la mejor opción ya que es una perdida de tiempo para él y al mismo tiempo si hay usuarios mirando el sitio va bien contenido inconsistente o a medio cargar.
+
+Es por eso que decidimos agregarle un botón de Preview para simplificarle la vida. Mi primer problema fue "ajammmm, como lo hago con Rails :)". Inspirado por cómo funciona el Preview de Wordpress comencé a ver qué opciones tenía.
+
+## Requisitos
+
+Empecemos por ver que tenemos. Hay dos escenarios posibles que hacen que nuestra solución cambie y depende báscamente si el formulario debe enviar un file upload o no. ¿Por qué? Simplemente el problema con el file upload es que no puede hacerse utilizando un HTTPRequest por restricciones (totalmente lógicas) de seguridad, por lo que si nuestro formulario debe enviar archivos la solución se complica un poco.
+
+Para esta entrega, solo voy a encarar el tema de formularios simples, donde no hay file upload ya que la solución al segundo problema la tengo que refinar un poco antes.
+
+Entonces, en el resto del artículo veremos como poner un botón de preview en nuestros formularios de "Nuevo Item" y "Editar Item".
+
+## Preparando el Ejemplo
+
+Para usar un ejemplo lo más real posible, vamos a armar un mini-blog, donde lo único que realmente nos interesa son las acciones de editar y crear. Eso sería :
+
+```
+$> rails blog ; cd blog
+$> script/generate nifty_layout
+$> script/generate nifty_scaffold post title:string content:text index new edit show
+$> rake db:migrate
+```
+
+Con esto tenemos nuestro blog up & running. Necesitan instalar [Nifty Generator](http://github.com/ryanb/nifty-generators/tree/master) de [Ryan Bates](http://www.railscasts.com/) para generar el código.
+
+## Agregando el botón Preview
+
+Ya que tenemos nuestro ejemplo funcionando es hora de agregar el botón mágico. Como quiero darle al usuario la mejor experiencia de uso que me salga, sin importarme los costos, vamos a darle un toque "fancy" al preview utilizando modal dialogs con Javascript. No siempre es la mejor opción, pero en este caso a mi me resultó cómodo que sea así (y el usuarios hoy en día está contento, so, ganamos lo dos).
+
+La elección de la fecha fue [ModalBox](http://okonet.ru/projects/modalbox/), que si bien la siento un poco lenta en mi Firefox, el cliente en Explorer no lo ha notado, por lo que no estoy seguro si mi browser será el problema (el nuevo firebug me parece que está molestando).
+
+Una vez que copiamos los archivos modalbox.js y modalbox.css en sus respectivos directorio los agregamos al layout :
+
+```
+
+
+```
+
+Cuando queremos mostrar un preview, tenemos básicamente dos opciones : mostrar cómo queda formateado el contenido con o sin el layout general del sitio. En este caso en particular el layout no me interesa, por lo que vamos a generar un preview solo del contenido. Además en este caso tampoco nos interesa que el preview quede registrado ni que guarde los datos en la base de datos, lo que simplifica mucho la cosa.
+
+Lo primero que vamos a hacer es agregar una nueva ruta, para poder poder poner la lógica de cómo se renderiza un preview. Al no tener un registro físico específico vamos a utilizar un URL del estilo "/posts/preview" por lo que modificamos nuestro route.rb de la siguiente manera :
+
+```
+map.resources :posts, :collection => {:preview => :get}
+```
+
+Del lado del contorller debemos

@@ -1,0 +1,54 @@
+---
+title: '/ URLs / Lindas / Con / Rails'
+description: ""
+pubDate: 2008-01-15
+redirect_from: 
+            - https://gazer.com.ar/2008/01/14/urls-lindas-con-rails/
+categories: "Programación, rest, ruby on rails"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Unos de los proyectos actuales en los que trabajo es un portal hecho en Ruby on Rails y tenía que mostrar el nombre de la seccion y subseccion en las URLs. La primer versión fue usar las rutas anidades que se incluyen en Rails 2.0 como sigue :
+
+```
+map.resources :sections do |section|
+  section.resources :subsections do |subsec|
+    subsec.resources :articles
+  end
+end
+```
+
+Sin embargo para Rails eso no son URls tan lindas como me (nos?) gustaría. Un ejemplo que daría la llamada a section_subsection_article_url sería : `/sections/1/subsections/2/article/4`, nada cómodo para alguien que quiere entrar a `/sections/deportes/notas/yyyyy`.
+
+La solución llegó, en parte, al encontrar el plugin [resource_hacks](http://www.jvoorhis.com/articles/2006/08/01/announcing-resource_hacks), que nos permite agregar un member_path a mano el cual Rails utilizaría para armar las rutas. Con el plugin instalado nuestro ejemplo anterior quedaría como :
+
+```
+map.resources :sections, :member_path => 'sections/:section' do |section|
+  section.resources :subsections, :member_path => 'sections/:section/:subsection' do |subsec|
+    subsec.resources :articles, :member_path =>; 'sections/:section/:subsection/:permalink'
+  end
+end
+```
+
+Y ahora si, si entramos a `/sections/deportes/` veremos la portada del sitio de Deportes.
+
+Este requerimiento era "importante" ya que el cliente quere manejar en forma dinámica el sitio. No todas las secciones tienen las mismas subsecciones y demás yerbas.
+
+Una vez que tuve todo eso andando, mi problema fue que los helpers _\_url_ y _\_path_ dejaron de andar alegando que los parametros de entrada no concordaban con lo esperado.
+
+Lo primero que encontré luego de un par de dias de buscar fue que había que redefinir el mítodo _to_param_ de los modelos para que retornen el string que quería mostrar en la URL, ya que por default retornan el id del objeto. Sin embargo esto no alcanzó. La solución llegó cuando se me ocurrió pasar un string a mano con el parámetro :id a los helpers y todo mágicamente empezó a funcionar.
+
+En lugar de :
+
+```
+
+```
+
+Llamar a :
+
+```
+ "1") %>
+```
+
+Y todo va de pelos. No se si es un comportamiento esperado, o si los helpers con este hack no serían válidos, pero esto anda al menos hasta ahora. Si a alguien se le ocurre por qué puede pasar esto o alguna mejor solución, será bienvenido :)
+
+En los controladores ahora debemos hacer las búsquedas por los strings que nos llegan mas el permalink del artículo, en lugar de utilizar el find por ID, por lo que es altamente recomendable agregar índices en las tablas :). Hay otras tantas optimizaciones que hacer, pero en general, la cosa funciona.

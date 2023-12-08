@@ -1,0 +1,18 @@
+---
+title: 'Simple Forum plugin for Rails'
+description: ""
+pubDate: 2008-09-30
+redirect_from: 
+            - https://gazer.com.ar/2008/09/29/simple-forum-plugin-for-rails/
+categories: "Programación, ruby on rails"
+heroImage: '/blog-placeholder-about.jpg'
+---
+La semana pasada tenía la necesidad de agregar un foro super simple para un cliente, basicamente querían que los usuarios del sitio puedan dejar comentarios de la campaña, hablen entre ellos y no mucho más. Ya tenía uno hecho todo mezclado en otra aplicación por lo que decidí que era hora de reescribir menos :).
+
+Lo primero que se me pasó por la mente "algo ya debe haber hecho" y si bien es cierto, lo poco que encontré se apoya en Engines lo cual para mi no es aceptable. Simplemente no me gusta Engines :). La mejor opción tal vez es [Beast](http://beast.caboo.se/) pero integrarlo con otra aplicación no es simple y tener el foro de forma externa no era una opción.
+
+Por lo que decidí empezar un "_site project_" a partir del código que ya tenía, que al haberlo escrito hace mucho era horrible por lo que el resultado fue casi casi que codeado desde 0.
+
+La idea es que en 3 pasos uno pueda tener el foro andando integrado en el sitio, y creo que mas o menos se logra con algunos "problemas". El principal tema es que al estar los controllers en el plugin, y estos no se recargan en development, es medio molesto usarlo porque depende de que se haga hay que reiniciar el server a cada rato (tira unos stack level too deph").
+
+[Acá](http://github.com/Gazer/simple-forum/tree/master) está el código para el que quiera probarlo, testearlo y recomendar alguna alternativa. Sobre todo si encuentran errores de gramática/sintaxis en la poca documentación que hice se agradecería :).

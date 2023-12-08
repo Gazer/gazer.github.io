@@ -1,0 +1,43 @@
+---
+title: 'Sobreviviendo ataques'
+description: ""
+pubDate: 2008-12-12
+redirect_from: 
+            - https://gazer.com.ar/2008/12/11/sobreviviendo-ataques/
+categories: "apache, deploy, General, html, http"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Está terminando un día largo, de esos que uno espera que no le toquen, pero que tarde o temprano llegan. Ayer a la noche en [3DG](http://www.3dgames.com.ar/) fuimos víctimas de un pequeño ataque. Por suerte los atacantes super buena onda. Luego de que apagamos el primer incendio estuvimos chateando con ellos y nos dieron la data de por donde entraron, cómo, qué cosas modificaron y lo mejor de todo, donde nos habían dejado los backups que habían hecho :).
+
+El ataque consistió en hacer que nuestros sitios (el target era el foro que es el que tiene más tráfico, pero afectó a otros sitios también) sean redirigidos a una página muy graciosa que no pienso linkear porque no es ATP. Para lograrlo (ya que el foro está aislado y no pudieron entrar por ahí) nos crackearon el sistema de publicidad e insertaron un banner javascript que hacía el redirect. Simple y efectivo.
+
+Para lograr el acceso al server de ads fue más fácil, simplemente explotaron un SQL Injection que por la fecha de última modificación del script, estaba desde el 2001 :). Con eso consiguieron el password de admin para poder poner su publicidad. Nuestro segundo problema fue obvio, el usuario que usa ese script para acceder a la DB tenía demasiados privilegios y pudo leer y modificar una otra base de datos.
+
+Más allá del trabajo que tuvimos que hacer para recuperar de nuestros backups cosas por las dudas (aunque nos hicieron backups tampoco confiar a ciegas :P) tuvimos que empezar a auditar cosas que teníamos pendiente hace rato. Para empezar necesitamos bajar los servicios completamente y la forma más linda que encontré fue usando un rewrite rule de apache, como sigue :
+
+```
+RewriteEngine on
+RewriteCond %{REQUEST_URI} !^/imagenes
+RewriteCond %{DOCUMENT_ROOT}/maintenance.html -f
+RewriteCond %{REQUEST_URI} !/maintenance.html$
+
+RewriteRule $ /maintenance.html [R=302,L]
+```
+
+De esta manera cuando terminamos de hacer el mantenimiento simplemente borramos el maintenance.html y el sitio vuelve solo a la vida. De paso ya lo dejamos para cuando hagamos futuros updates.
+
+Lo otro que nos entró en duda cuando arreglamos el problema fue : ¿lo arreglamos realmente? ¿tendremos otro agujero en algún lado?. Para poder revisar esto comencé a buscar herramientas para auditar SQL Injections y me encontré con un [post](http://www.security-hacks.com/2007/05/18/top-15-free-sql-injection-scanners) donde habían varias soluciones. La que usamos finalmente fue [sqlmap](http://sqlmap.sourceforge.net/index.html#intro) porque fue la que mejor nos pareció que andaba.
+
+Fue una tarde divertida viendo que podíamos romper de nuestro viejo sitio. Para escanearlo simplemente corríamos :
+
+```
+#$ sqlmap -dbs -u "http://127.0.0.1/scriptbuggeado.php?Id=1"
+```
+
+El programa primero trata de ver si el parámetro Id es vulnerable a diferentes formas de hacer injection y si descubre alguna trata de obtener la lista de DBs. Es lindo ver cuando aparecen todas tus DBs en la consola :). Si le agregamos "-v 2" es más gracioso aún, porque los nombres van apareciendo letra a letra (parece que las va adivinando o algo, no me fijé en el código para ver como lo hace).
+
+A esta hora cerramos ya el agujero del ataque y dos más que detectamos.
+
+El último problema que encontramos fue que habían subido un shell. Para esto crackearon el password de programa para enviar newsletters y subieron un archivo php que tiene un shell re lindo que tiene funciones para escanear vulnerabilidades localmente. Acá el problema fue que el sysadmin anterior dejó permiso para ejecutar script en el directorio donde el programa guarda attachments que después se usan en el email (como imágenes en esos emails molestos HTML que nos llegan todos los días). Sacando los permisos para ejecutar cualquier tipo de script el shell ya no funciona.
+
+Como sysadmin "temporal" fue una experiencia divertida, sobre todo porque no hubo pérdida de datos y la buena onda de los atacantes :) (¿tendré el [Síndrome de Estocolmo](http://es.wikipedia.org/wiki/S%C3%ADndrome_de_Estocolmo)?).

@@ -1,0 +1,18 @@
+---
+title: 'Plot window otra vez'
+description: ""
+pubDate: 2006-01-07
+redirect_from: 
+            - https://gazer.com.ar/2006/01/07/plot-window-otra-vez/
+categories: "GNU+Linux, Oregano"
+heroImage: 'https://www.gazer.com.ar/wp-content/MiniOreganoPlotOld.jpg'
+---
+Ya parece un tema recurrente en mi intento diario por hacer una ventana de ploteo que me guste. Este vez me cansé de mi intento frustrado de _plot widget_ y me puse a buscar algo que ande de verdad :-)
+
+Lo que mejor se adapta a lo que necesitamos y que encontré fue [GtkDataBox](http://www.eudoxos.de/gtk/gtkdatabox/) , aunque hay algunas cosas que todavía no me cierran del todo.[](https://www.gazer.com.ar/wp-content/OreganoPlotOld.jpg)
+
+[![Vieja ventana de ploteo](https://www.gazer.com.ar/wp-content/MiniOreganoPlotOld.jpg "Vieja ventana de ploteo")](https://www.gazer.com.ar/wp-content/OreganoPlotOld.jpg) [![Nueva ventana de ploteo](https://www.gazer.com.ar/wp-content/MiniOreganoPlotNew.jpg "Nueva ventana de ploteo")](https://www.gazer.com.ar/wp-content/OreganoPlotNew.jpg)
+
+El widget nuevo se nota que funciona mejor. El zoom anda bien, la velocidad de dibujo mejora y cuando el volumen de funciones es alto (más de 10 funciones) es notable la diferencia.
+
+En fin, será cuestión de seguir trabajando y ver si algunas de las cosas que no he sabido hacer salen a la luz. Por si alguien quiere probar que onda, dejo el [parche](http://gazer.homelinux.org/darcsweb/darcsweb.cgi?r=oregano-stable;a=plain_commitdiff;h=20060107190424-7ae4f-99dbe833b510d1debf3241349ac280dad53f71cd.gz;) en el post. Solo he probado la versión 0.4.0 de GtkDataBox.

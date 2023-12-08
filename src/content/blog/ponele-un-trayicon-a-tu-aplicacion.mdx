@@ -1,0 +1,82 @@
+---
+title: 'Ponele un TrayIcon a tu aplicación'
+description: ""
+pubDate: 2005-01-20
+redirect_from: 
+            - https://gazer.com.ar/2005/01/20/ponele-un-trayicon-a-tu-applicacion/
+categories: "Mono"
+heroImage: 'https://www.gazer.com.ar/wp-content/trayicon.png'
+---
+Es realmente muy simple hacer que nuestra aplicación use el _área de notificación de Gnome_ utilizando Mono y C#, gracias a que [Todd Bermann](http://codeblogs.ximian.com/blogs/tberman/) hace ya unas semanas [escribió el módulo Egg TrayIcon enteramente en C#](http://codeblogs.ximian.com/blogs/tberman/archives/000439.html), liberándonos de la tortura del código en C :-) ... realmente se implementa en unos pocos minútos, veamos.
+
+1. Primero bajamos el archivo [TrayIcon.cs](http://codeblogs.ximian.com/blogs/tberman/archives/TrayIcon.cs) que Todd Bermann ha hecho. 2) Escribimos nuestra applicación de prueba, contará hacia adelante (hasta el overflow del int) :
+
+```
+// Namespaces que vamos a utilizar
+using System;
+using Gtk;
+using Gnome;
+using Egg; // Este namespace está definido en el archivo TrayIcon.cs
+
+// Nuestra clase de ejemplo
+class TrayTest {
+  static int count = 0;
+  static Label label;
+
+  public static void Main(string[] args)
+  {
+    EventBox eb;
+    TrayIcon trayIcon;
+    // Creamos un programa
+    Program test = new Program ("Test", "0.0.1", Modules.UI, args);
+
+    // Creamos la etiqueta
+    label = new Label ("Hola Mundo");
+
+    // No realmente necesario para este ejemplo, pero si deseamos agregar
+    // menú contextual o tooltip es necesario
+    eb = new EventBox ();
+    eb.Add (label);
+
+    // Creamos el tooltip
+    trayIcon = new TrayIcon ("Test");
+    trayIcon.Add (eb);
+    trayIcon.ShowAll ();
+
+    // Iniciamos el texto
+    Count ();
+
+    // Refresco cada 1 segundo
+    GLib.Timeout.Add (1000, new GLib.TimeoutHandler (Count));
+
+    // Done!, Corriendo!!!
+    test.Run ();
+  }
+
+  public static bool Count ()
+  {
+    label.Text = String.Format ("Voy contando {0} veces ...", count);
+    count++;
+    return true;
+  }
+}
+```
+
+3. Compilamos nuestra aplicación :
+
+```
+ $ mcs -target:exe -out:TrayTest.exe -pkg:gtk-sharp -pkg:gnome-sharp *.cs
+ Compilation succeeded
+```
+
+4. La ejecutamos :
+
+```
+ $ mono ./TrayIcon.exe    (en Debian con "./TrayIcon.exe" alcanza, no se si otras distros usan binfmt por defecto)
+```
+
+Si no tenemos área de notificación en nuestro panel de Gnome, lo agregamos antes para ver el resultado, y veríamos algo como :
+
+![Ejemplo de TrayIcon](https://www.gazer.com.ar/wp-content/trayicon.png)
+
+Como se darán cuenta, muy simple y rápido .... Espero que lo disfruten!

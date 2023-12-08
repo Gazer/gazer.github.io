@@ -1,0 +1,16 @@
+---
+title: 'Linux ath9k y beacon loss from AP'
+description: ""
+pubDate: 2009-08-11
+redirect_from: 
+            - https://gazer.com.ar/2009/08/10/linux-ath9k-y-beacon-loss-from-ap/
+categories: "ath9k, GNU+Linux, ubuntu"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hace unos días finalmente instalé Ubuntu 9.04 nuevamente en mi MacBook y estaba muy contento con el soporte (iRemote, iSight, Suspend e Hibernate, etc) hasta que empezaron los problemas con la placa Wifi.
+
+El síntoma es que a cada rato se desconecta un segundo y vuelve, lo que lo hace insoportable para aplicaciones como Skype (y bue, de alguna forma cómoda hay que comunicarse con la flia) o trabajar por ssh.
+
+El problema al parecer es una mezcla del driver ath9k y NetworkManager. Lo que sucede es que cuando el NM trata de refrescar la lista de APs dispara una operación que en el driver se reduce a ejecutar algunos cambios de frecuencia, reset de registros, etc. y eso si sobrepasa un cierto tiempo (que ahora no recuerdo si eran 2 o 4 segundos y tampoco guarde el link :D) dispara un trigger de "beacon loss from AP" y el NM cree que se desconectó y reinicia la conexión.
+
+Hasta el momento el único workarround que encontré que parece funcionar bien es sacar NM e instalar wicd que no hace auto-scan de APs, por lo que no ocurre el problema (apt-get install wicd automáticamente desinstala NM).

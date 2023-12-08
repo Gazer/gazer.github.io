@@ -1,0 +1,46 @@
+---
+title: 'Do it right! - Manejo de dependencias'
+description: ""
+pubDate: 2009-03-10
+redirect_from: 
+            - https://gazer.com.ar/2009/03/09/do-it-right-manejo-de-dependencias/
+categories: "deploy, General, GNU+Linux, php, Programación, ruby"
+heroImage: '/blog-placeholder-about.jpg'
+---
+En estos días he tenido varias discusiones sobre algunas prácticas muy acostumbradas en varios proyectos, que a mi parecer están muy lejos de lo útil. Es por eso que decidí escribir un par de artículos denominados "Do it right!" (hazlo bien!, si mi inglés no es tan malo como pienso :D). En esta primer entrega voy a tratar el tema de manejo de dependencias.
+
+**Escenario**
+
+Muchas veces uno se encuentra con un software que necesita y le es útil. Vamos a suponer de entrada que no tiene paquete para su distribución y/o sistema operativo favorito. En al leer el README vemos que depende de muchas cosas : alguna biblioteca de procesamiento de imágenes, algún captcha system o lo que sea.
+
+Mirando mejor nos encontramos con una realidad muy fea : todas las dependencias están incluidas en el archivo que nos bajamos originalmente, y alguna veces se cargan por métodos poco ortodoxos.
+
+Cualquiera que haya bajado cosas en PHP o Java seguramente se ha encontrado con esto : Clases bajadas de phpclasses.org o miles de archivos JAR en un directorio lib de la aplicación Java que se cargan en el classpath. También lo he visto en varios proyectos Rails últimamente.
+
+La excusa que siempre escucho es "_Because it makes the app more self contained_", si, si, BWTF. Pero la pregunta es : ¿es la forma correcta?. Si respondes que si, estás muy lejos de la realidad y seguramente tu sysadmin te odia mucho, pero mucho :).
+
+**El Problema**
+
+Entonces, ¿cuál es el problema con esto?. En principio parece una maravilla, nos facilita todo, descomprimimos y ya está!, el sysadmin (nosotros) agradecido, pero si el sysdamin es otra persona y se respeta los va a putear mucho, pero muuuuuucho.
+
+Uno de los problemas con empaquetar todas las dependencias es la facilidad de solucionar problemas a futuro. El mejor ejemplo que he vivido es el típico cambio de time zone en nuestro país. PHP, por ejemplo, tiene su propia DB de timezones, y si actualizamos el tzdata de nuestro servidor, maravillosamente PHP ni se entera. Está bien que en este caso como programadores no podemos hacer mucho, es el lenguaje el que está mal, pero el ejemplo ilustra mi punto.
+
+Un software con el que tuve que trabajar, vBulletin, va aún más allá. Tiene su propia DB de timezones por arriba de la que tiene PHP!, hardcodeada en un array!. ¿La excusa? Que la de PHP no anda bien en Windows y es mejor de esta manera.
+
+Otro ejemplo que puedo dar es el otro día cuando migré unos sitios en el trabajo. Uno de los admines se quejó que dejó de andar porque usaba la función "dl" de PHP para cargar extensiones en tiempo de ejecución! (es decir, cualquier script PHP puede cargar un .so que extiende PHP de cualquier manera, incluso para saltearse otras medidas de seguridad), lo que no solo es una chanchada, sino que es un potencial problema de seguridad.
+
+Tener el manejo de dependencias con la aplicación además nos prohíbe actualizar fácilmente un bug de seguridad, usabilidad o lo que sea de esa dependencia. No podemos en muchos casos hacer un _upgrade_ de ese paquete que está embebido dentro de un todo llamado "aplicación".
+
+En rails he visto ya muchos que acostumbran a usar "rake gems:unpack" para meter las gemas de las que dependen en el directorio vendors/gems, así no las tienen que instalar aparte. Rubygems disgusta en muchos ambientes, no voy a entrar en eso hoy :). Si uno depende de una versión específica la forma correcta sería especificar en el environment.rb la versión, y luego que el que hace el deploy haga un "rake gems:install" para asegurar que se cumplan las dependencias. Con Capistrano es una papa hacer esta tarea automáticamente ;).
+
+**Entonces, ¿nunca más lo hago?**
+
+No me gustan los extremos y creo que estas malas prácticas que se ven hoy tiene usos muy específicos.
+
+Supongamos que el proyecto X usa la lib Y, pero tal cual la provee upstreem no me sirve. Lo lógico es hacer un patch para upstream solucionando el problema o agregando la característica.
+
+Mientras upstream acepta el patch y realiza un nuevo release, ahí si tiene sentido tal vez, y de forma temporal tener esa dependencia embebida.
+
+Un ejemplo donde yo lo estoy haciendo es con el uso de la gema contacts, que depende de la gema json. En una aplicación con Rails 1.2.6 no hay ningún problema, pero en otra que usa Rails 2.1 si, porque este último integra un parser de JSON y conflictua con la gema del mismo nombre. La opción lógica sería migrar la aplicación 1.2.6 a una nueva versión de Rails, cosa que no siempre es fácil y se necesita el tiempo. Como no se pudo, es más fácil meter en uno de los proyectos la gema de manera que no moleste al resto de los proyectos en el transcurso de la actualzación.
+
+Seguro hay algún otro caso, ahora no se me ocurre alguno que realmente lo justifique.

@@ -1,0 +1,24 @@
+---
+title: 'Life'
+description: ""
+pubDate: 2006-08-23
+redirect_from: 
+            - https://gazer.com.ar/2006/08/22/life/
+categories: "GNOME, Programación"
+heroImage: 'https://www.gazer.com.ar/wp-content/uploads/2006/08/EvinceDvi_New.thumbnail.jpg'
+---
+**Facultad**
+
+Hoy empezaron las clases, y a diferencia de otros cuatrimestres tengo ganas de cursar :-). Tendré algo que ver que me anote en materias copadas?, seguramente ;-).
+
+Estoy haciendo principalmente Teoría de Algorirmos II y Teoría del Lenguaje, y planeo aprovechar que curso con mi directora de Tesis para ponerle pilas.
+
+**Evince**
+
+Ya hace tiempo vengo aportando [algún](http://bugzilla.gnome.org/show_bug.cgi?id=323429) [que](http://bugzilla.gnome.org/show_bug.cgi?id=328102) [otro](http://bugzilla.gnome.org/show_bug.cgi?id=314072) parche a [Evince](http://www.gnome.org/projects/evince/), el visor de documentos de [GNOME](http://www.gnome.org/). Desde que comencía cerrar bugs de [GNOME Love](http://live.gnome.org/GnomeLove), había uno que me tenía atraido, y es el de agregar[![Evince New](https://www.gazer.com.ar/wp-content/uploads/2006/08/EvinceDvi_New.thumbnail.jpg)](https://www.gazer.com.ar/wp-content/uploads/2006/08/EvinceDvi_New.jpg "Evince New") soporte para los comandos [DVI](http://en.wikipedia.org/wiki/DVI_%28file_format%29) Specials al backend de DVI. No es una tarea fácil, ya que me costó encontrar documentación sobre los comandos, y entender el código que se encarga de leer el archivo DVI.
+
+Este fin de semana finalmente mande la [primer versión del parche](http://bugzilla.gnome.org/show_bug.cgi?id=303651), a la que ya le contré por lo menos dos bugs :-), y eso que solo agregaba soporte para el color del texto :-D.
+
+Anoche en un ataque de furia arregle los problemas anteriores y sume soporte para el comando background para ver el color de fondo de las páginas. Todavía tengo que arreglar un par de problemas pero ya casi está listo.
+
+[![Evince Old](https://www.gazer.com.ar/wp-content/uploads/2006/08/EvinceDvi_Old.thumbnail.jpg)](/img/uploads/2006/08/evincedvi_old.jpg "Evince Old")Luego de eso quedan dos retos interesantes. El primero es el soporte de HyperText, que ya estuve jugando en mi primer intento de arreglar este bug y tengo idea de como hacerlo. Me falta resolver un problema de coordenadas y nada más. El componente más dificil va a ser mostrar las imágenes, ya que no siempre están presentes y pueden estar en diversos formatos. Veremos si logro hacerlo antes de aburrirme :-).

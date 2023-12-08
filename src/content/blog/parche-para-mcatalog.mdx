@@ -1,0 +1,20 @@
+---
+title: 'Parche para MCatalog'
+description: ""
+pubDate: 2004-10-25
+redirect_from: 
+            - https://gazer.com.ar/2004/10/25/parche-para-mcatalog/
+categories: "General, Mono, Programación"
+heroImage: '/blog-placeholder-about.jpg'
+---
+[MCatalog](http://mcatalog.sf.net/) es un catálogos de libros y películas escrito en [Mono](http://www.go-mono.org/)+GTK# que promete cosas muy lindas. Puede manejar préstamos de nuestras cosas y lo más lindo es que busca en [Amazon](http://www.amazon.com/) toda la info del libro/película (incluida una fotito).
+
+Pero bueno, como mi ISP me obliga a usar proxy http, tuve que empezar a leer un poco del System.Net de la plataforma .NET para ver como diablos se le agrega un proxy a las conexiones HTTP.
+
+El primer intento fue exitoso, pero solo era local para el System.Web.Services.Protocols.SoapHttpClientProtocol, que tiene una propiedad que es proxy donde le asignamos una instancia de WebProxy y sale todo andando bonito. El problema es que el resto de las consultas las hace con WebClient, que dentro usa WebHttpRequest. Este último soporta proxy, pero como esta oculto dentro del WebClient no tenia acceso a él.
+
+Luego de un rato de googlear y leer la documentación de MSDN encontré System.Net.GlobalProxySelection !, la magia estaba hecha .. Tiene una propiedad que se llama _Select_ donde asignamos una instancia de WebProxy , y todas nuestras HttpRequest utilizarán proxy .
+
+Luego de fixear un par de cosas más, como ser sacar la configuración desde el Gnome Proxy Settings, el [parche](http://gazer.homelinux.org/files/patches/proxy.diff) vino a mí y lo envié a los desarrolladores. Solo falta ver si lo aceptan .
+
+El parche fue realizado sobre la versión 0.0.4.

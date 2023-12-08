@@ -1,0 +1,14 @@
+---
+title: 'Wordpress bugfix'
+description: ""
+pubDate: 2005-05-26
+redirect_from: 
+            - https://gazer.com.ar/2005/05/25/wordpress-bugfix/
+categories: "General"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hoy finalmente pude encontrar el problema del WP y la generación de los _feed_ que hacía que el [Planet Lugfi](http://planet.lug.fi.uba.ar) no me mostrara (para suerte de muchos :-D), y Damián me ayudó a descubrir el problema.
+
+El problema está en donde verifican si está seteada HTTP*IF_MODIFIED_SINSE y HTTP_IF_NONE_MATCH, por eso siempre retornaba \_304 Not Modified* al pedir los _feed_. Estos dos valores no necesariamente estan seteados al mismo tiempo, y fallaba llamando a strtotime con un string nulo. La modificación manual la saqué de [acá](http://fernando.dubtribe.com/archives/2005/05/10/solution-to-wp151-rss-errors/), enlace que encontré en los bug de Wordpress.
+
+De todos modos ha salido una versión de bugfix, numerada 1.5.1.1 que incluye este arreglo y otros más. Si todo salió bien, en un rato debería aparecer en el Planet :-)

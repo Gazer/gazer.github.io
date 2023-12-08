@@ -1,0 +1,44 @@
+---
+title: 'GtkBarCode'
+description: ""
+pubDate: 2005-02-23
+redirect_from: 
+            - https://gazer.com.ar/2005/02/23/gtkbarcode/
+categories: "Programación"
+heroImage: 'https://www.gazer.com.ar/wp-content/gtkbarcode_demo.png'
+---
+Hace unos días estuve jugando con barcode, una aplicación de consola para crear códigos de barra, ya que debíamos hacer las tarjetas para marcar la entrada de los empleados en el trabajo. El programa soporta una gran cantidad de formatos, y los saca en Postscript.
+
+Luego de eso recordé a un amigo que hizo un programa para generar códigos de barra para la imprenta del padre, por un requerimiento de la AFIP (si mal no recuerdo). La cosa es que este amigo vendió varias copias de su programa, pero esa no es la historia de este post :-) ... El programa lo hizo en Delphi con un componente que bajo de internet. Busqué un poco en Google (muy poco realmente) y no pude encontrar algo parecido para Gtk+ (solo he encontrado el programa [gLabels](http://glabels.sourceforge.net/) que lo utiliza en forma gráfica, también haciendo un hack medio extraño), así que decidí hacer uno ;-)
+
+![Primer pantallazo !!!](https://www.gazer.com.ar/wp-content/gtkbarcode_demo.png)El resultado es GtkBarCode, un widget Gtk+ 2.x que dibuja el código de barra y lo puede exportar a PDF, PS, PNG y dibujarlo en pantalla, todo esto gracias a que adapté el algoritmo que hacía la salida en Postcript del programa original para que use Cairo, ya comentada y que cada día me gusta más.
+
+El widget no está ni apenas el 10%, solo es un hack de 1 noche para ver que salía y si era viable, y como se puede ver en la imagen adjunta, lo es :-)
+
+Cosas que debo agregar ahora :
+
+- ~~gtk_barcode_set_encoding~~ : seleccionar el tipo de encoding a usar y refrescar el widget
+- ~~gtk_barcode_set_text~~ : cambiar el texto a encodear (por ahora solo muestra el texto con el cual fue creado
+- gtk_barcode_use_checksum : setear si se debe usar un dígito de checksun al final
+- gtk_barcode_export_to : o algo así para exportar a PNG, PS y PDF
+- Alguna otra cosa que ahora no se me ocurra :-)
+
+Los códigos soportados son :
+
+- EAN
+- UPC (12-digit ean)
+- ISBN (still EAN13)
+- Code 39
+- Code 128
+- Code 128C (compact form for digits)
+- Code 128B (full printable ascii)
+- Code I25 (interleaved 2 of 5 (only digits))
+- Code 128RAW (Raw code 128)
+- Code CBR
+- Code MSI
+- Plessey
+- Code 93
+
+Cabe aclarar que la parte de la codificación no he hecho nada. Aparentemente el source estaba separado para generar una biblioteca dinámica, pero Debian no lo hace, y en el paquete original no está terminado, es por eso que decidí meter todo el código útil para el widget (aka, la parte de codificación), dentro de mi proyecto, sitando el respectivo autor y toda la movida.
+
+No tengo apuro en terminarlo, y calculo que cuando tenga más o menos ordenado el código crearé el repositorio Darcs para que lo puedan bajar y probar.

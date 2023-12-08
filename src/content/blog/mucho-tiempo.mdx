@@ -1,0 +1,36 @@
+---
+title: 'Mucho tiempo ...'
+description: ""
+pubDate: 2005-02-12
+redirect_from: 
+            - https://gazer.com.ar/2005/02/12/mucho-tiempo/
+categories: "General"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hace más de una semana que no posteo nada, pues no tengo mucho para decir :-), salvo que Luca se aduerño del [Planet](http://planet.lug.fi.uba.ar) por lo que tendrá que ponerme :-P.
+
+#### Oregano
+
+El progreso del PageManager va a ser lento, ya que no tengo mucho apuro. Estoy empezando a realizar los diagramas de clases, secuencia y algunos casos de uso del editor de Bibliotecas que quiero hacer como primer paso de la migración a [Mono](http://www.mono-project/ "Esto mola bien ..."), pero antes de empezar a codear tengo que ver con que reemplazar Gnome.Canvas, ya que me niego a caer en la misma situación actual, por lo que probablemente termine haciendo algo con Gtk#+System.Drawing+Cairo#.
+
+Por el lado de la rama estable no hay muchas noticias, hoy finalmente encontré la manera de hacer que los XML generados por Oregano no sean de una sola línea y están indentados "bonito", cambio que está en ambas ramas del repositorio.
+
+#### gFilter
+
+Los chicos de [gFilter](http://gforge.lug.fi.uba.ar/projects/gfilter/) están avanzando según parece (no puedo dar fé porque no se que esperar del resultado que me da el programa :-)). Estan buscando gente que les de una mano con optimizaciones, aunque no se que tan grave será, con solo agregar -O2 a la línea de compilación bajo 1 (un) minuto el tiempo de cálculo :-). Mi problema es que no se "la fórmula mágica" que resuelven, y lo que le veo de malo es que sea recursiva, gran parte del tiempo tal vez se pueda mejorar haciendola iterativa, todo depende de que tan grande sea el árbol de recursión que se genera. Un lindo análisis para un sábado a la tarde.
+
+#### Microsoft
+
+Al fin, luego de muuuuchos años, parece que van a hacer [una bien](http://www.codeproject.com/managedcpp/WhidbeyBreakingChanges.asp) y finalmente vcc (el compilador de Visual Studio) va a ser ANSI C++ compatible (o "más compatible de lo que es ahora"). Claro, como no puede ser de otra manera, esto "romperá" cosas que hoy en día andan.
+
+#### Mono
+
+He encontrado este [lindo de un buscador](http://www.codeproject.com/cpnet/introtomono1.asp) que hace una búsqueda en Google y muestra algunos resultados. Viene a compañado de una intrducción a lo que es la plataforma Mono y algunas cosas más sin importación.
+
+[Este](http://www.codeproject.com/cpnet/googleSearch.asp) es un ejemplo un poco más interesante : un buscador que utiliza un WebService de Google para realizar la búsqueda, en lugar de parsear HTML. Muy ilustrativo para iniciarse en los WebServices con .NET.
+
+#### Nuevo estilo
+
+Si no estan leyendo esto directamente desde el blog, sepan que he cambiado el aspecto del mismo. El cambio no es la gran cosa, y quedan detalles por pulir. La principal motivación fue que encontre como 10 blogs en un solo día con el theme por defecto de WordPress, y bueno, había que cambiar :-).
+
+El mayor desafío fue lograr los marcos con esquinas redondeadas, sin utilizar tablas (Damián me lo debe estar agradeciendo :-P), solo utilizando CSS y DIVs, creo que ha quedado bastante bonito :-)

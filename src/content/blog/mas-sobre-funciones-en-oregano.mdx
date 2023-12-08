@@ -1,0 +1,28 @@
+---
+title: 'Más sobre funciones en Oregano'
+description: ""
+pubDate: 2005-07-15
+redirect_from: 
+            - https://gazer.com.ar/2005/07/15/mas-sobre-funciones-en-oregano/
+categories: "Oregano"
+heroImage: 'https://www.gazer.com.ar/wp-content/Oregano-FancyTree-Concept.png'
+---
+Ya en el post pasado había comentado el nuevo _feature_ de poder agregar funciones. Lo primero que surgió como necesidad fue modificar la forma en como se muestran las cosas en la lista de la izquierda de la ventana de ploteo, para poder separar aquellas que eran nodos, de las funciones. Todo esto para tener más comodidad a la hora de querer seleccionar las cosas.
+
+El primer intento fue bastante [desastroso visualmente](https://www.gazer.com.ar/wp-content/Oregano-FancyTree.png), aunque funcionaba. Lo que realmente quería mostrar era lo siguiente :
+
+![Concepto](https://www.gazer.com.ar/wp-content/Oregano-FancyTree-Concept.png)
+
+Lo cual no fue nada fácil encontrar como realizar. La solución llegó en #gnome-hackers de FreeNode, donde [federico](http://primates.ximian.com/~federico/news.html) me dio el _hack_ necesario para hacerlo, quedando finalmente así :
+
+[![Concepto](https://www.gazer.com.ar/wp-content/Oregano-FancyTree-Final-Mini.jpg)](https://www.gazer.com.ar/wp-content/Oregano-FancyTree-Final.jpg)
+
+No le presten mucha atención a los colores, pues es otro _hack_ a medio hacer y que todavía no me convence :-), pero la idea es también mostrar de que color se está dibujando cada curva para poder identificarlas fácilmente.
+
+No es exactamente la idea original, pero está cerca. Más adelante veré si es posible mejorar la disposición de las celdas para que queden como a mi me gusta :-)
+
+La principal ventaja de este nuevo método es que para elegir que curvas dibujar no se depende de una "selección en la lista" lo cual hace mucho menos traumática la tarea, ya que antes accidentalmente era muy fácil romper la selección y tener que comenzar desde 0.
+
+**Update** Finalmente he logrado hacer exactamente lo que quería :-) ... hoy descubrí _[gtk_tree_view_column_pack_start](http://developer.gnome.org/doc/API/2.0/gtk/GtkTreeViewColumn.html#gtk-tree-view-column-pack-start)_, el resto fue cuestión de minutos.
+
+![Concepto](https://www.gazer.com.ar/wp-content/Oregano-FancyTree-Final-Mejorado.png)

@@ -1,0 +1,43 @@
+---
+title: 'Limpiando los mails de Yahoo Groups'
+description: ""
+pubDate: 2009-03-16
+redirect_from: 
+            - https://gazer.com.ar/2009/03/16/limpiando-los-mails-de-yahoo-groups/
+categories: "css, General, html"
+heroImage: 'https://www.gazer.com.ar/wp-content/uploads/2009/03/yahoogroups_bad-300x223.png'
+---
+Una de las cosas más molestas que tiene Yahoo Groups es la cantidad de basura que le mete a los emails que llegan desde el grupo. Como dicen, una imagen dice más que mil palabras :
+
+[![](https://www.gazer.com.ar/wp-content/uploads/2009/03/yahoogroups_bad-300x223.png "yahoogroups_bad")](/img/uploads/2009/03/yahoogroups_bad.png)
+
+Es realmente perturbante, sobre todo porque lo pone en cada email. La primer opción que busqué fue decirle a Gmail que me muestre los emails como plain-text, lo que no encontré. Después recordé que como uso Gmail para trabajar, me llegan emails con links en html-only :S, por lo que de todas formas no me servía.
+
+Entonces dije "no hay drama, lo modifico con [Stylish](https://addons.mozilla.org/en-US/firefox/addon/2108)", una extensión de Firefox que permite mediante CSS cambiar cosas (y un poco más liviana que [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/748)). La cosa no fue tan fácil, ya que el HTML que inserta Yahoo no tiene ni class ni id en los tags HTML, por lo que tuve que hacer un poco de magia con los CSS Selectors de Firefox, que por fortuna son varios :).
+
+El resultado final obtenido es :
+
+[![](https://www.gazer.com.ar/wp-content/uploads/2009/03/yahoogroups_good-300x96.png "yahoogroups_good")](https://www.gazer.com.ar/wp-content/uploads/2009/03/yahoogroups_good.png)
+
+Todavía quedan algunos detalles, como sacar una imagen de 1x1 pixels al final del cuerpo que según parece usa Yahoo para geolocalizar desde donde se leen sus email.
+
+El CSS aplicado :
+
+```
+@namespace url(https://www.w3.org/1999/xhtml);
+@-moz-document domain(mail.google.com) {
+  .ii > div > div > div > div > div + div {
+    display: none !important;
+  }
+  .ii > div > div > div > div {
+    display: none !important;
+  }
+  .ii > div > div > :first-child {
+    width: 95% !important;
+  }
+  .ii > div > div > div > :first-child {
+    display: block !important;
+    width: 100% !important;
+  }
+}
+```

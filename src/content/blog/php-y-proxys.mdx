@@ -1,0 +1,31 @@
+---
+title: 'PHP y PROXYS'
+description: ""
+pubDate: 2006-07-27
+redirect_from: 
+            - https://gazer.com.ar/2006/07/27/php-y-proxys/
+categories: "General"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hace ya varias semanas venía peleando con el nuevo sitio de [Oregano](http://oregano.gforge.lug.fi.uba.ar/), donde quise agregar una pequeña sección que muestre los últimos commits en el repositorio, utilizando el RSS que provee [darcsweb](http://auriga.wearlab.de/~alb/darcsweb/).
+
+Me llevo muchas puteadas entender que el problema era que la función fopen de [PHP](http://www.php.net/) no sabe realizar un GET a través de un proxy HTTP :(, pero por suerte la gente deja comentarios y la función en cuestión es la siguiente :
+
+```
+function proxy_url($proxy_url) {
+   $proxy_name = 'proxy.fi.uba.ar';
+   $proxy_port = 8080;
+   $proxy_cont = '';
+   $proxy_fp = fsockopen($proxy_name, $proxy_port);
+   if (!$proxy_fp) {return false;}
+   fputs($proxy_fp, "GET $proxy_url HTTP/1.0\r\nHost: proxy_name\r\n\r\n");
+   while(!feof($proxy_fp)) {
+     $proxy_cont .= fread($proxy_fp,4096);
+   }
+   fclose($proxy_fp);
+   $proxy_cont = substr($proxy_cont,  strpos($proxy_cont,"\r\n\r\n")+4);
+   return $proxy_cont;
+}
+```
+
+Solo bastó con reemplazar el [fopen](http://ar2.php.net/manual/en/function.fopen.php) por proxy_url y salió andando :)

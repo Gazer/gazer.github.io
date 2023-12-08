@@ -1,0 +1,18 @@
+---
+title: 'has_sitemap plugin'
+description: ""
+pubDate: 2008-06-22
+redirect_from: 
+            - https://gazer.com.ar/2008/06/22/has_sitemap-plugin/
+categories: "has_sitemap, plugin, Programación, ruby on rails"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Este fin de semana tenía que agregar a 4 sitios de clientes un sitemap para mejorar la indexación por los motores de búsqueda, así que para hacerlo una vez y rápido, decidí aprender a hacer plugins para Rails.
+
+No es que sea una magia absoluta, de hecho es muy tonto hacer uno. Pero cómo codeas adentro del plugin creo que es importante, porque la gente los usa como cajas negras, y si es un desastre, todo lo de afuera se vuelve un desastre.
+
+El plugin permite agregar sitemaps tal cual lo define el [protocolo](http://www.sitemaps.org/protocol.php), mediante un simple helper y una función adicional donde el controller debe generar la data que desea agregar. Lo que se encapsula es básicamente el generador del XML.
+
+Todo se genera dinámicamente y por ahora solo es útil para sitios realmente chicos (&lt; 100 urls) como los que yo necesitaba. El protocolo especifica que se pueden poner hasta 50k de URLs (o 10Mb) por lo que este plugin no es útil, al menos por ahora, para esos casos.
+
+El código está hosteado en <http://github.com/Gazer/has_sitemap/tree/master>.

@@ -1,0 +1,51 @@
+---
+title: 'Refactoring de "Fat Methods" - Episodio 5'
+description: ""
+pubDate: 2009-03-18
+redirect_from: 
+            - https://gazer.com.ar/2009/03/18/refactoring-de-fat-methods-episodio-5/
+categories: "php, Programación, refactoring, ruby"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Pasar programadores PHP a Ruby no siempre es una tarea trivial, mayormente porque lo primero que tratan de hacer es escribir código en lugar de pensar que es lo que quieren hacer :). No es que me queje, a todos nos pasa que resolvemos el problema como primero sale (más aún cuando las fechas de entrega son apretadas :).
+
+El otro día queriendo modificar un código me encuentro con este before_filter en un controller :
+
+```
+def setprofile
+  @viewer = false
+  if (!params['id'] && !params['profile_id'])
+    @profile = @passport
+  else
+    if params['profile_id']
+      pid = params['profile_id']
+    else
+      pid = params['id']
+    end
+    @profile = Passport.find_by_id(pid)
+    if (!@profile)
+      redirect_to(:controller => 'my3dg', :action => 'show') and return false
+    end
+    if (@profile.id != @passport.id)
+      @viewer = true
+    end
+  end
+end
+```
+
+Lo primero que pense "uff, que paja, que complicado" hasta que miré mejor la estructura y ahí comprendí que en realidad era muy simple, solo que estaba escrito de forma complicada. Lo primero que me gustó de Ruby cuando empecé a entenderlo fue el uso de "||" para reemplazar esos molestos if anidados cuando tengo más de una opción. "Si no está a, poner a en el valor default". En ruby es un simple "a || valor_default" (ojo con los valores de verdad en ruby).
+
+Lo otro que veo mucho (incluso en los trabajos que corrijo en la facultad) es utilizar un if para después setear una variable en true o false, cuando casi todos los lenguajes aceptan expresiones booleanas del lado derecho de la igualdad.
+
+Refactorizando el método anterior obtenemos el siguiente código :
+
+```
+def setprofile
+  @profile = Passport.find_by_id(params['profile_id'] || params['id']) || @passport
+  @viewer = @profile.id != @passport.id
+  redirect_to(:controller => 'my3dg', :action => 'show') unless @profile
+  return false unless @profile
+end
+```
+
+Como nota, uso find_by_id porque retorna nil en caso de no encontrar el registro, en cambio find tira una excepción RecordNotFound, de esa forma puedo acoplar otro "||" para setear el valor default (@passport es la credencial del usuario loggeado en este caso).

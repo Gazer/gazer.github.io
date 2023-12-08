@@ -1,0 +1,18 @@
+---
+title: 'Socorro Electrónicos!!!'
+description: ""
+pubDate: 2005-01-24
+redirect_from: 
+            - https://gazer.com.ar/2005/01/24/socorro-electronicos/
+categories: "Oregano"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hoy estuve peleándome a la tarde con [Oregano](http://oregano.gforge.lug.fi.uba.ar) para resolver un problema reportado por Marc Lorber, quién envió un parche para que se agreguen los _.include_ de los modelos complejos, dentro de la netlist (como ser el ejemplo del _Vacuum tube triode 12ax7a_).
+
+El parche funciona bien y fue aplicado (previa corrección de otro bug arrastrado desde el comienzo) y funciona de 10 con el ngSpice. Sin embargo, nuestro fiel intento de dar soporte a [GNU Cap](http://www.gnu.org/software/gnucap/) sigue fallando (y como siga así lo voy a mandar a pasear :-)). Para empezar, en el ejemplo de tubo de vacío, el primer problema es que la nomenclatura de pines no soporta letras , por lo que : `.SUBCKT 12AX7A A G K` debe ser traducido como `.SUBCKT 12AX7A 1 2 3` y dentro del subckt todas las referencias a las letras AGK también deben ser modificadas.
+
+Otro problema es que el nombre del modelo (12AX7A) no puede empezar con un número, pues lo toma como AX7A por lo que nunca lo encuentra por más que se haga el include :-(
+
+Por último, al parecer GNU Cap no soporta los B\* del modelo, lo cual ya es irritante para utilizar modelos.
+
+Bien, si alguien sabe de modelos, netlist y se tiene ganas de [leer la documentación del GNU Cap](http://www.gnu.org/software/gnucap/man/index.html) y darnos una mano, les invito a escribirme o dejar un comentario :-), ya que se necesita reescribir todos los modelos actuales para que anden con GNU Cap y luego modificar el código para que use uno u otro según el backend.

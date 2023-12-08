@@ -1,0 +1,60 @@
+---
+title: 'Refactoring de "Fat Methods" - Episodio 2'
+description: ""
+pubDate: 2008-10-09
+redirect_from: 
+            - https://gazer.com.ar/2008/10/09/refactoring-de-fat-methods-episodio-2/
+categories: "Programación, refactoring, ruby on rails"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Continuando con esta serie de ejemplos de como refactorizar métodos de controladores vamos a seguir ahora con uno que cuando lo volví a ver apestaba _feo feo_.
+
+El método en cuestión tiene por objetivo que el usuario actual se _suscriba_ (es decir, anote) para jugar un partido determinado. Para eso el siguiente código es el que está siendo ejecutado actualmente :
+
+```
+  # app/controllers/matches_controllers.rb
+  def subscribe
+    flash[:notice] = "Ya formás parte del equipo!" and
+        redirect_to match_path(@match) and
+        return if @match.has_player? current_user
+
+    flash[:error] = "El equipo está completo."
+      and redirect_to match_path(@match) and ]
+      return if @match.available_places(params[:team].to_i)  current_user, :team => params[:team]
+
+    redirect_to match_path(@match)
+  end
+```
+
+Lo feo del problema se puede ver desde dos perspectivas : una que es una excusa y otra que es la razón de la desprolijidad. La excusa para este código tan horrible es que en caso de no poder agregar el jugador al equipo elegido tengo que mostrar un mensaje de error y redireccionar. Pero el `redirect_to` lo que hace es setear un header nada más, es decir que no hace un return auto-mágico, y de no hacerlo yo el segundo `redirect_to` (ubicado al final del código) haría que se lance una `Exception` por haber reenviado los headers.
+
+El problema real es que estoy delegando en el controlador la responsabilidad de la clase `Player` para determinar si es válido crear una instancia para un partido y usuario dado.
+
+Es por eso que lo primero que debemos hacer es usar los [validators](http://api.rubyonrails.org/classes/ActiveRecord/Validations.html) de Rails para esta tarea :
+
+```
+  # app/models/player.rb
+  def validate
+    errors.add_to_base("Ya formás parte del equipo!") if match.has_player? user
+    errors.add_to_base("El equipo está completo.") if match.available_places(team) < = 0
+  end
+```
+
+En este caso los errores no dependen de un atributo, por lo que usamos `add_to_base` para que los errores digan lo que queremos. Este método `validate` es llamado por Rails al crear o actualizar una instancia de `Player`, y si hay algún error nunca llega a la DB.
+
+Habiendo quitado la validación del controlador ahora podemos escribirlo de una forma más prolija y entendible :
+
+```
+  # app/controllers/matches_controllers.rb
+  def subscribe
+    @player = @match.players.create :user => current_user, :team => params[:team].to_i
+
+    flash[:notice] = @player.errors.full_messages.join(", ") if @player.errors.any?
+
+    redirect_to match_path(@match)
+  end
+```
+
+Lovely :). Se crea un `Player` para el `Match`, se prepara una alerta visual en caso de que haya algún error y luego se redirige a la página del partido. Si ven el antes y el después creo que nadie me va a negar de la mejora :).
+
+Por hoy es todo, hasta la próxima entrega!.

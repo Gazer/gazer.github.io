@@ -1,0 +1,22 @@
+---
+title: 'Ponele un nombre a tu punta de pruebas!'
+description: ""
+pubDate: 2008-02-15
+redirect_from: 
+            - https://gazer.com.ar/2008/02/15/ponele-un-nombre-a-tu-punta-de-pruebas/
+categories: "Oregano, Programación"
+heroImage: 'https://www.gazer.com.ar/wp-content/uploads/2008/02/oregano-clamp-labels.thumbnail.png'
+---
+Y si, algún día se iba a dar, y que mejor día que "_San Valentín_" para demostrarle todo tu amor a tu proyecto favorito :D ?. A partir de hoy se le pueden poner nombres a las puntas de pruebas. Nada de adivinar quién es _v(1)_, quién* v(2)*; solo poné "_In_", "_Out_", y listo!!!
+
+La verdad que no fue trivial ya que en donde necesitaba los nombres ya se había perdido el contexto del Schematic y solo tenía la información que da el Engine (y no soporta cosas lindas como v(1) AS MiNombre, tipo SQL :-P), pero haciendo un par de pases mágicos de punteros entre estructuras, quedó andando. Lo único feo feo feo, es que hay que acordarse que "_el último apaga la luz_", que en este caso es liberar la lista de nombre, pero ya veré como mejorarlo más adelante.
+
+Seguro explota en muchos casos, puede fallar :), pero la idea está y abre la puerta a un refactoring (otra vez!!!) del Engine System para ser "Context Aware" del Schematic que se esté simulando.
+
+Espero hacer en estos días cuando complete el soporte para NgSpice, ya que por ahora solo anda con GNUCap.
+
+El screenshot :
+
+[](/img/uploads/2008/02/oregano-clamp-labels.png "Puntas de Pruebas con nombre en oregano")
+
+[![Puntas de Pruebas con nombre en oregano](https://www.gazer.com.ar/wp-content/uploads/2008/02/oregano-clamp-labels.thumbnail.png)](/img/uploads/2008/02/oregano-clamp-labels.png "Puntas de Pruebas con nombre en oregano")

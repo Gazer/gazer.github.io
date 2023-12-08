@@ -1,0 +1,61 @@
+---
+title: 'Generando assembler'
+description: ""
+pubDate: 2008-11-18
+redirect_from: 
+            - https://gazer.com.ar/2008/11/18/generando-assembler/
+categories: "Mono, Tesis"
+heroImage: '/blog-placeholder-about.jpg'
+---
+En esta oportunidad para mi Tesis necesité ver cómo modificar el assembler generado por el JIT para agregar instrucciones antes y después de la llamada a un método. El código assembler generado originalmente es el siguiente :
+
+```
+00000000 (Test_Bar):
+(bb):3
+   0:   55                      push   %ebp
+   1:   8b ec                   mov    %esp,%ebp
+   3:   83 ec 08                sub    $0x8,%esp
+   6:   83 ec 0c                sub    $0xc,%esp
+   9:   68 c0 8f 05 00          push   $0x58fc0
+   e:   e8 e5 fd ff ff          call   fffffdf8 (Test_Bar +0xfffffdf8)
+  13:   83 c4 10                add    $0x10,%esp
+(bb):1
+  16:   c9                      leave
+  17:   c3                      ret
+```
+
+Mi primer intento fue fácil y consistió en ejecutar una función desde assembler antes de cada método generado por el JIT usando los macros `x86_push_reg` y `x86_call_reg`. El primero permite poner un valor en un registro y el segundo hacer un `call` usando la dirección en el registro como punto de entrada. El paso siguiente fue pasarle un parámetro a la función, cosa que no fue tan fácil :).
+
+Encontré que durante la compilación (en un método llamado `mono_codegen`) se llama a `mono_arch_emit_prolog`, que dependiendo de la arquitectura se linkea un método diferente. Como yo estoy haciendo todo para x86, me fui a buscar la función para esta arquitectura.
+
+El método en cuestión se encarga de generar un bloque básico de instrucciones para llamar una función, resolviendo ya el problema del pasaje de argumentos, salvar los registros, asegurar alineaciones de memoria y otro tanto código que no se que hace :). Intenté un buen rato meter assembler a mano ahí sin mucho éxito, generando uno loops y segfaults muy bonitos.
+
+Mi problema de insertar assembler antes del código generado por emit*prolog venía a la deriva hasta que caí en la cuenta que Mono tiene una opción de \_profiling* y me puse a investigarla.
+
+Encontré que si el profiler está activo en un momento se llama a `mono_arch_instrument_prolog` que permite pasarle una función y un `MonoMethod` (estructura interna que tiene toda la información de un método en código intermedio) y este genera el assembler para ejecutar esa llamada, que en este caso el profiler usa para contar cuantas veces se llama a cada método, entre otras cosas. Esta función me permitió cumplir mi cometido.
+
+Simplemente agregué un método propio tomando como ejemplo cómo se llama al profiler, y el resultado fue que ahora el assembler generado queda :
+
+```
+00000000 (Test_Bar):
+(BB):3
+   0:   55                      push   %ebp
+   1:   8b ec                   mov    %esp,%ebp
+   3:   83 ec 08                sub    $0x8,%esp
+   /* Acá empieza lo insertado */
+   6:   83 ec 08                sub    $0x8,%esp
+   9:   55                      push   %ebp
+   a:   68 34 58 2f 08          push   $0x82f5834
+   f:   e8 64 6e 87 50          call   50876e78 (Test_Bar+0x50876e78)
+  14:   83 c4 10                add    $0x10,%esp
+  /* Acá termina */
+  17:   83 ec 0c                sub    $0xc,%esp
+  1a:   68 c0 9f 05 00          push   $0x59fc0
+  1f:   e8 64 fd ff ff          call   fffffd88 (Test_Bar+0xfffffd88)
+  24:   83 c4 10                add    $0x10,%esp
+(BB):1
+  27:   c9                      leave
+  28:   c3                      ret
+```
+
+De a poco las cosas van andando y se va cerrando el ciclo. Estoy más cerca que hace 2 semanas de poder ejecutar algo útil :P.

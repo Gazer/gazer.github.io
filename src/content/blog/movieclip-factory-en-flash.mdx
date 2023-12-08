@@ -1,0 +1,68 @@
+---
+title: 'MovieClip Factory en Flash'
+description: ""
+pubDate: 2008-12-05
+redirect_from: 
+            - https://gazer.com.ar/2008/12/04/movieclip-factory-en-flash/
+categories: "cache, flash, Programación, videojuegos"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Para un videojuego que nos pidió un cliente tuve que solucionar un problema que me costó bastante y es por eso que lo comparto. Si bien no me gusta mucho escribir por acá sobre software privativo, en este caso encontré tan poca información que me pareció bueno compartirlo.
+
+El juego en cuestión es un scroller horizontal, en donde van entrando chimeneas (mas bien techos con sus chimeneas) y Papá Noel tiene que hacer el delivery de regalos :). El problema apareció cuando empecé a agregar más y más techos al escenario.
+
+La forma en que inicialmente lo manejaba era con un gran MovieClip que tenía adentro los techos en sus respectivas posiciones y luego moviendo el gran MovieClip movía todo. Simple, pero inefectivo. Según parece (aunque no hay nadie que lo confirme) Flash se lleva mal con las técnicas de clipping básicas y por eso el mover un MovieClip enorme (estamos hablando de 4000 o 5000px de ancho) le es costoso (algo así como consumir el 95% del CPU). Otra cosa que incrementaba el problema es que el juego tiene 3 layers para hacer un efecto de [Parallax scrolling](http://en.wikipedia.org/wiki/Parallax_scrolling).
+
+Esto hizo que empezara a investigar opciones, y la solución que mejor se adapta es crear los objetos antes de que entren en pantalla (unos pixels antes) y destruirlos al salir. Ahora bien, crear y destruir objetos _on-the-fly_ es aún peor en muchos casos que el problema inicial :). La solución real al problema es reutilizar las instancias en lugar de eliminarlas. ¿Cómo?. Seguí leyendo.
+
+La idea básica es que cuando un MovieClip sale de pantalla, en lugar de eliminarlo lo ocultamos. De esta forma Flash lo ignora al hacer el render. Si en algún momento necesitamos crear un objeto del mismo tipo, en lugar de crear uno nuevo, reutilizamos el que teníamos oculto y lo hacemos visible (previo acomodarlo donde corresponde). Ahora multipliquen esta idea por 10 tipos de objetos diferentes, y que además son generados al azar antes de empezar cada nivel (no puedo predecir cuantos de cada tipo necesito).
+
+Esto hace que en lugar de tener una lista de MovieClips tengamos una lista de puntos, y solo movemos los puntos. En cada frame nos fijamos que puntos están por entrar a la pantalla y creamos el nuevo objeto y lo ponemos en la posición del punto. Mi código luce más o menos así :
+
+```
+// Crea los objetos que deben estar visibles
+// en un momento dado.
+while (i  (Stage.width+10)) {
+    // Este punto está muy afuera y como
+    // están ordenados, el resto también.
+    break;
+  }
+
+  // Si estoy a 10 pixels de entrar lo creo
+  var t:Techo = factory.create(o.techo, "techo"+last_id, 9000+last_id);
+  // Acomodo el nuevo objeto, ya sea nuevo nuevo u obtenido del cache
+  t._x = o.x;
+  t._y = Stage.height - 125;
+  // Esta lista tiene los Techos reales que estan visibles en pantalla
+  techos.push(t);
+  last_id++;
+  ++i;
+}
+// Elimino los puntos que ya use
+chimeneas = chimeneas.splice(i);
+```
+
+La solución que implementé fue esto que llamo "MovieClip Factory" que adjunto al final del post para quien quiera descargarla. La idea es que en lugar de crear un nuevo MovieClip con attachMovie, lo hago con la factory. Esta clase se encarga de manejar al lógica de caching de manera transparente.
+
+Cuando no necesitamos más un objeto simplemente lo devolvemos a la fábrica y así esta lo deja a la espera de ser reusado. Un ejemplo de uso sería algo como sigue :
+
+```
+/* mc sería el MovieClip que queremos usar como padre */
+factory = new Factory(mc);
+factory.registerCode(1, "Techo01");
+
+var t:MovieClip = factory.create(1, "un_id", 1);
+// Devuelvo el objeto al factory.
+factory.push(t);
+
+/* A este punto t y u son el mismo objeto */
+var u:MovieClip = factory.create(1, "un_id", 1);
+```
+
+Haciendo las cuentas, si en promedio mis techos miden 250px cada uno, de hacerlo de la manera inicial tendría que crear unos 16 techos para un escenario de 4000px de ancho. Usando el factory, suponiendo que más de 4 techos a la vez no puedo ver (por el ancho del área visible) en el peor de los casos tengo 4 de cada tipo de techo (2 completos y 2 mitades, una que entra y una que sale), es decir 20 objetos en memoria siendo el consumo mayor.
+
+Sin embargo al generar el escenario en forma aleatoria yo valido que no toquen 2 iguales seguidos porque quedaban feos, por lo que la cuenta en realidad da 2 objetos simultáneos máximo de cada tipo, siendo 10 en total en memoria.
+
+La otra ventaja es que puedo hacer el escenario infinitamente largo a costo constante de uso de memoria :)
+
+[Descargar MovieClip Factory](https://www.gazer.com.ar/wp-content/uploads/2008/12/factory.as)

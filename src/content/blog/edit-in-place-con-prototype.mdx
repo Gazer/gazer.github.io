@@ -1,0 +1,45 @@
+---
+title: 'Edit In Place con Prototype'
+description: ""
+pubDate: 2009-01-21
+redirect_from: 
+            - https://gazer.com.ar/2009/01/21/edit-in-place-con-prototype/
+categories: "falta uno, General, html, javascript, prototype"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Una de las cosas que me venían pidiendo en [¡Falta Uno!](http://www.falta-uno.com.ar/) era que se le pudieran asignar nombre a los equipos de un partido. En un principio pensé solo en poner los campos en el formulario de "crear partido" pero después me pareció que quedaba piola que se puedan editar directamente desde el resumen, usando un "Edit in place". Me puse a buscar si había algo hecho con Proptotype (que es lo que uso en este proyecto) y encontré [esto](http://editinplace.org/) que viene con varios [ejemplos](http://release.editinplace.org/latest/example.html).
+
+La biblioteca es muy fácil de usar y bastante flexible en cómo queremos que se comporte el edit (puede ser un input, un textarea, un combo). Suponiendo que los nombres de equipos estén siendo mostrados de la siguiente manera :
+
+```
+<h2 id="team_name_1"></h2>
+
+<!-- skip -->
+
+<h2 id="team_name_2"></h2>
+```
+
+Para poder editar los títulos simplemente basta con ejecutar el siguiente código cuando se carga la página :
+
+```
+$('team_name_1').editInPlace({
+  auto_adjust: true,
+  select_text: true,
+  save_url: ' 1) %>'
+});
+$('team_name_2').editInPlace({
+  auto_adjust: true,
+  select_text: true,
+  save_url: ' 2) %>'
+});
+```
+
+Es recomendable poner este código dentro de un método y usar un Observer para ejecutarlo, así mantenemos separada la lógica JS del HTML. Bastaría con un simple `Event.observe(window, 'load', initEIP);`.
+
+Por el lado del servidor, el método que atiende el request (el definido el save_url) tiene que devolver el nuevo valor que va a tomar el campo. Por ejemplo, si el nombre no se pudo cambiar, deberíamos devolver el anterior. En este caso que es simple el template a devolver es el siguiente :
+
+```
+
+```
+
+Para terminar, en caso de que el navegador del usuario no tenga JS queda el formulario de "Editar/Crear Partido" donde se pueden poner los nombres de manera tradicional.

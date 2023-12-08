@@ -1,0 +1,26 @@
+---
+title: 'ET Server Applet'
+description: ""
+pubDate: 2004-12-13
+redirect_from: 
+            - https://gazer.com.ar/2004/12/13/et-server-applet/
+categories: "Programación"
+heroImage: 'https://www.gazer.com.ar/wp-content/et_super_groso.png'
+---
+Hace un tiempito que había empezado un Applet para el panel de Gnome que indica el status de un servidor particular del juego Wolfeinstein : Enemy Territory. Hoy finalmente pude lograr algún progreso :
+
+![La ventana de Status](https://www.gazer.com.ar/wp-content/et_super_groso.png)
+
+La información que da hasta ahora es :
+
+- Lista completa de los jugadores conectados
+- Cantidad de lugares y lugares libres en el servidor (con un indicador visual)
+- Configuración de IP:Port del servidor a monitorear
+- Posibilidad de usar Proxy
+- Mapa actual
+
+Algunas cosas que tengo que arreglar antes de sacar la primer versión (o espero hacerlo) :
+
+- Agregar un GtkTreeModelFilter para ordenar la lista de jugadores
+- Lidiar con un problemita de paso de datos entre el Thread de la GUI y el Thread que realiza la conexión HTTP
+- Probar, Probar, Probar :-)

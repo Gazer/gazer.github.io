@@ -1,0 +1,52 @@
+---
+title: 'Git branch & Subversion detection en el prompt de Bash'
+description: ""
+pubDate: 2011-09-07
+redirect_from: 
+            - https://gazer.com.ar/2011/09/06/git-branch-subversion-detection-en-el-prompt-de-bash/
+categories: "bash, git, GNU+Linux, subversion"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Simple, agregar en el .bashrc lo siguiente :
+
+```
+function parse_git_branch {
+  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* (.*)/(1)/'
+}
+
+function detect_svn {
+  test -d .svn && echo "(svn)"
+}
+
+function proml {
+  local         RED="[33[0;31m]"
+  local   LIGHT_RED="[33[1;31m]"
+  local      YELLOW="[33[0;33m]"
+  local LIGHT_GREEN="[33[1;32m]"
+  local       WHITE="[33[1;37m]"
+  local  LIGHT_GRAY="[33[0;37m]"
+  local LIGHT_PURPLE="[33[1;34m]"
+  case $TERM in
+    xterm*)
+    TITLEBAR='[33]0;u@h:w07]'
+    ;;
+    *)
+    TITLEBAR=""
+    ;;
+  esac
+
+PS1="${TITLEBAR}
+$LIGHT_PURPLEw$YELLOW$(parse_git_branch)$(detect_svn)
+$LIGHT_GRAY$ "
+PS2='> '
+PS4='+ '
+}
+proml
+```
+
+Y se ve algo como (sin colores, sorry :) :
+
+```
+~/src/some_git_project(master)$
+~/src/some_svn_project(svn)$
+```

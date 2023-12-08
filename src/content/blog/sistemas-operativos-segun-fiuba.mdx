@@ -1,0 +1,86 @@
+---
+title: 'Sistemas Operativos, según FIUBA'
+description: ""
+pubDate: 2004-11-02
+redirect_from: 
+            - https://gazer.com.ar/2004/11/02/sistemas-operativos-segun-fiuba/
+categories: "General"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hoy estuve mirando algunos parciales para saber como será el examen de _Sistemas Operativos_ de esta noche. Mirando específicamente [éste](http://www.assekuransa.com/~gazer/Parcial4.jpg) examen, me di cuenta de lo triste de la realidad (en realidad ya sabía como venía la mano ).
+
+Para ser coherente conmigo mismo, empecé por el final del primer ejercicio, que pedía ordenar de una forma peculiar los datos de salida. El archivo final tendrá 3 columnas separadas por ';' y deberá estar ordenado en orden ascendente por el primer campo, y en orden descendente según el tercer campo, para cada valor del primer campo (ahh, me mareo :-P) .... esto sería :
+
+```
+   1;2;4
+   2;4;2;
+   1;8;9;
+```
+
+debería quedar ordenado como .
+
+```
+   1;8;9;
+   1;2;4
+   2;4;2;
+```
+
+Tarea que parecía muy simple, que llevo un buen rato descubrir. La magia está dada por la siguiente línea _mágica_ :
+
+```
+   cat tmp.txt | sort -n -k 3 -t ';' -r | sort -s -n -k 1 -t ';' > salida.txt
+```
+
+El primer sort ordena por la segunda columna. La magia la hace el segudo sort con el '-s -n', que todavía no me queda del todo claro como trabaja -s, pero de alguna manera se da cuenta de que yo ya habia ordenado la tercera columna y no me rompe ese orden al ordenar por la primer columna.
+
+Voy a tener que memorizar algunas man pages más en la próxima hora por las dudas .... aunque dudo que sea posible memorizar la manpage de bash .
+
+Luego la primera parte, no parece ser tan complicada, pero queda una basofia del siguiente estilo :
+
+```
+#!/bin/sh
+#Supervisor a usar
+SUP=$1
+INI=$2
+FIN=$2
+
+#TODO :
+#   * validar que $SUP exista
+#   * validar INI < FIN
+
+ZONA=<buscar la zona de $SUP en SUPERVISORES.TXT>
+
+# tengo que un rango de campañas : $INI A $FIN
+for i in `seq -s ' ' $INI $FIN` ; do
+  #para esa campaña, busco en cada .txt
+  for j in *.txt ; do
+    #me quedo con esas lineas
+    lineas=`cat "$j" | egrep "^$i;"
+    # Para cada linea
+    for k in $lineas ; do
+      esta_zona=`echo $k | cut -d ';' -f 3`
+      if [ "$esta_zona" = "$ZONA" ] ; then
+        cultivo=`echo $k | cut -d ';' -f 3`
+        centro=`echo $k | cut -d ';' -f 3`
+        a_sumar=`echo $k | cut -d ';' -f 4`
+        valor_actual=`cat $cultivo.$centro.tmp`
+        let valor_actual=$valor_actual+$a_sumar
+        echo $valor_actual > "$cultivo.$centro.tmp"
+      fi
+    done
+  done
+  # tengo muchos archivos .tmp, uno por cultivo con su total para
+  # la campaña $i, los pongo en el archivo final.
+  for j in *.tmp ; do
+    valor=`cat $j`
+    centro=`echo "$k" | cut -d '.' -f 2`
+    cultivo=`echo "$k" | cut -d '.' -f 1`
+    linea="$centro;$cultivo;$valor"
+    echo "$linea" >> Informe$SUP.TXT
+  done
+done
+
+# Hacer el sort que está más arriba sobre Informe$SUP.TXT
+```
+
+Bien, claro que no lo he probado ni por casualidad, por lo que no debe correr, y más probablemente no haga exactamente lo que me piden ... en fin ... es solo una demo de lo que les espera a aquellos que todavía no la han cursado y pretenden aprender algo útil se puede recurrir a nuestra librero en el living y tomar el librito de Andrew S. Tanenbaum o el de Stalling ...

@@ -1,0 +1,172 @@
+---
+title: 'Dependencias Funcionales y Cubrimiento Minimal'
+description: ""
+pubDate: 2007-06-13
+redirect_from: 
+            - https://gazer.com.ar/2007/06/13/dependencias-funcionales-y-cubrimiento-minimal/
+categories: "General, Programación"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Muchas veces nos encontramos con cosas que molestan, y las dos que nombro en el título son claros ejemplos, o por lo menos lo son cuando uno estudia Bases de Datos (al menos en mi facultad :D).
+
+En realidad el tema en sí no es complicado ni difícil, sino más bien molesto. El algorítmo de Cubrimiento Minimal es uno de los peores y consta de 4 pasos (3 en realidad, el paso 0 no existe como tal :P) y hacer un solo ejercicio a mano me llevó 5 carillas y unas cuantas decenas de minutos.
+
+La molestia viene dada por dos ciclos anidados que se complica por un tercer ciclo para un calculo intermedio, lo que lo convierte en 3 ciclos anidados :). Creo que no hice cosa más inútil en mi carrera (mentira, si me esfuerzo **seguro** algo encuentro). Sin contar que hay que recalcular un conjunto en cada paso para verificar condiciones. En fin, nada útil si no van a cursar la materia :D.
+
+Todo esto viene a que implementó (literalmente a como está en el libro, nada de hacerse el loco y querer optimizar, de hecho lo empeoro copiando mil veces las cosas por las dudas no pisar nada sin querer :D) el algoritmo de Cubrimiento Minimal para un conjunto de Dependencias Funcionales, lo que me permite corregir los ejercicios en cuestión de segundos.
+
+Les dejo el código por si alguno cae por acá y lo encuentra útil.
+
+<!--more-->
+
+```
+#!/usr/bin/python
+#
+# Calculo de Cubrimiento Minimal para un conjunto de dependencias
+# funcionales.
+#
+# Implementacion literal del algoritmo explicado en el libro
+# "Introduccion a las bases de datos relacionales" de Mendelzon-Ale.
+# Editorial Prentice Hall.
+#
+# Pag. 109
+#
+# Nada de optimizaciones ni cosas raras ;), solo para revisar los ejercicios
+# porque son un dolor de huevos hacerlos a mano :S.
+
+# Metodos de ayuda
+def joinNoDup(str1, str2):
+    for i in str2:
+        if i not in str1:
+            str1 += i
+    return str1
+
+def AttrIsIn(s, a):
+    count = 0
+    for j in a:
+        if j in s:
+            count += 1
+    if count == len(a):
+        return True
+    return False
+
+
+
+class DF:
+    """Dependencia Funcional
+
+        X -> Y (X determina Y)
+    """
+    def __init__(self, X, Y):
+        self.X = X
+        self.Y = Y
+        self.usada = False
+
+    def __repr__(self):
+        return "%s -> %s" % (self.X, self.Y)
+
+class ConjuntoDF:
+    """Conjunto de Dependencias Funcionales"""
+    def __init__(self, copyFrom=None):
+        self.dfs = []
+        if copyFrom is not None:
+            for i in copyFrom.dfs:
+                self.dfs.append(DF(i.X, i.Y))
+
+    def CalcularClausura(self, X):
+        """Obtiene X+ sobre el conjunto de dependencias funcionales actual"""
+        Cl = X
+        Clp = None
+        for i in self.dfs:
+            i.usada = False
+
+        while Cl != Clp:
+            Clp = Cl
+            for i in self.dfs:
+                if i.usada:
+                    continue
+                V = i.X
+                W = i.Y
+                if AttrIsIn(Cl, V):
+                    Cl = joinNoDup(Cl, W)
+                    i.usada = True
+        return Cl
+
+    def BorrarDF(self, df):
+        """Saca una dependencia funcional del conjunto"""
+        for i in self.dfs:
+            if i.X == df.X and i.Y == df.Y:
+                self.dfs.remove(i)
+
+    def CubrimientoMinimal(self):
+        """Calcula el cubrimiento minimal de dependencias funcionales"""
+        # Paso 0
+        F0 = ConjuntoDF(self)
+
+        # Paso 1
+        F1 = ConjuntoDF()
+        for i in F0.dfs:
+            if len(i.Y) > 1:
+                for j in i.Y:
+                    F1.dfs.append(DF(i.X, j))
+            else:
+                F1.dfs.append(i)
+
+        # Paso 2
+        F2 = ConjuntoDF(F1)
+        for i in F1.dfs:
+            Z = i.X
+            for B in i.X:
+                c1 = F1.CalcularClausura(Z.replace(B, ""))
+                if i.Y in c1:
+                    Ft = ConjuntoDF(F2)
+                    Ft.BorrarDF(DF(Z, i.Y))
+                    Ft.BorrarDF(DF(Z.replace(B, ""), i.Y))
+                    c2 = Ft.CalcularClausura(Z.replace(B, ""))
+                    if i.Y in c2:
+                        Z = Z.replace(B, "")
+
+            i.X = Z
+
+        # Paso 3
+        Fm = ConjuntoDF(F2)
+        for i in F2.dfs:
+            G = ConjuntoDF(Fm)
+            G.BorrarDF(i)
+            c = G.CalcularClausura(i.X)
+            if AttrIsIn(c, i.Y):
+                Fm = G
+
+        return Fm
+
+# Teste de Calculo de Clausuras
+print "Inicializando ...."
+F = ConjuntoDF()
+F.dfs.append(DF("AB", "C"))
+F.dfs.append(DF("C", "A"))
+F.dfs.append(DF("BC", "D"))
+F.dfs.append(DF("ACD", "B"))
+F.dfs.append(DF("D", "EG"))
+F.dfs.append(DF("BE", "C"))
+F.dfs.append(DF("CG", "BD"))
+F.dfs.append(DF("CE", "AG"))
+
+print
+print "Calculando algunas clausuras de muestra"
+print "B+  =", F.CalcularClausura("B")
+print "A+  =", F.CalcularClausura("A")
+print "C+  =", F.CalcularClausura("C")
+print "CD+ =", F.CalcularClausura("CD")
+print "D+  =", F.CalcularClausura("D")
+
+print
+print "Dependencias Funcionales"
+for i in F.dfs:
+    print i
+
+print
+print "Cubrimiento Minimal"
+Fm = F.CubrimientoMinimal()
+for i in Fm.dfs:
+    print i
+```

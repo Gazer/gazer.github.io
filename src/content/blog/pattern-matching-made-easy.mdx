@@ -1,0 +1,29 @@
+---
+title: 'Pattern matching made easy'
+description: ""
+pubDate: 2008-11-24
+redirect_from: 
+            - https://gazer.com.ar/2008/11/24/pattern-matching-made-easy/
+categories: "glib, Mono, pattern matching, Tesis"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Siguiendo en carrera para ir cerrando problemas para mi tesis en esta oportunidad necesité buscar una manera simple de hacer [pattern matching](http://en.wikipedia.org/wiki/Pattern_matching). El uso que le iba a dar era muy simple y no necesitaba mucho poder a la hora de las expresiones que se iban a definir.
+
+La idea es poder definir qué métodos quiere uno interceptar usando algún patrón. Por ejemplo, si queremos ejecutar cierto código antes de cualquier método de la clase Test, simplemente debería bastar con poder especificar "Test:\* (\*)". En este caso acepto cualquier método con cualquier cantidad de parámetros (puede ser vacío). O si queremos anticipar las llamadas a ToString podríamos definir "\*:ToString ()".
+
+Haciendo una rápida búsqueda en Mr. G. caí primero en en la documentación de la [GNU C Library](http://www.gnu.org/software/libtool/manual/libc/Pattern-Matching.html). Tiene más o menos lo que necesitaba, específicamente la sección de "wildcard matching", pero no encontré como precompilar el patrón. Es algo requerido ya que se evalúa para cáda método que el JIT está por ejecutar por lo que si quiero que sea más o menos "performante" no puedo darme el lujo.
+
+Estaba a punto de ir por una solución usando expresiones regulares cuando me encontré con que la biblioteca glib soporta "[glob-style pattern matching](http://library.gnome.org/devel/glib/stable/glib-Glob-style-pattern-matching.html)". Tiene menos operadores que la otra (solo \* y ?) pero es más que suficiente para empezar. Como glib es usada por Mono internamente por todos lados no agrega una dependencia extra así que por ahora estoy usándola.
+
+La API es bastante cómoda (aunque siguiendo el fiel estilo de glib los nombres son largos), siendo un simple ejemplo de uso :
+
+```
+GPatternSpec *pattern = g_pattern_spec_new ("Test:* (*)");
+g_pattern_match_string (pattern, "Test:Bar ()"); // true
+g_pattern_match_string (pattern, "Test:Foo (int)"); // true
+g_pattern_match_string (pattern, "System.Console:WriteLine (string)"); // false
+```
+
+En mi código no uso g*pattern_match_string ya que recomiendan que si uno tiene varios \_wildcards* se obtienen mejores resultados pasando también el string invertido, por lo que uso directamente [g_pattern_match](http://library.gnome.org/devel/glib/stable/glib-Glob-style-pattern-matching.html#g-pattern-match) que acepta más parámetros, incluido el string invertido. Lo bueno es que no tengo que preocuparme por strings multibytes porque hasta ahora no conozco ningún lenguaje que corra sobre .NET que permita usar caracteres extendidos para nombrar clases y métodos :).
+
+Me queda como tarea analizar ambas bibliotecas para ver si efectivamente la implementación de glib es más óptima a la hora de hacer repetidas consultas sobre un patrón.

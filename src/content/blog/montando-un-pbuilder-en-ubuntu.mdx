@@ -1,0 +1,12 @@
+---
+title: 'Montando un pbuilder en Ubuntu'
+description: ""
+pubDate: 2005-07-22
+redirect_from: 
+            - https://gazer.com.ar/2005/07/22/montando-un-pbuilder-en-ubuntu/
+categories: "GNU+Linux"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Anoche me puse a jugar con [PBuilder](http://www.netfort.gr.jp/~dancer/software/pbuilder-doc/pbuilder-doc.html) para hacer mejores pruebas sobre los paquetes que estoy haciendo para [Ubuntu](http://www.ubuntulinux.com/), a fin de tenerlos listos para el Review Day del 28 de julio y conseguir que entren para el lanzamiento de [Breezy Badger](https://wiki.ubuntu.com/BreezyBadger).
+
+Lo monte siguiendo [este](https://wiki.ubuntu.com/PbuilderHowto) HowTo publicado en Ubuntu, pero reemplazando _hoary_ por _breezy_ y salió andando en unos 20 minutos sin mayores problemas. Uno de mis paquetitos falla porque el repositorio de universe está medio trulado en estos momentos y no puede bajar una de las bibliotecas especificadas en el Build-Depends del paquete, pero tengo fé que el fin de semana podré hacer el test completo y ajustar cualquier problema de última hora para la fecha de revisión.

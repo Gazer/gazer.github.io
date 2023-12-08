@@ -1,0 +1,18 @@
+---
+title: 'Juegos con J2ME'
+description: ""
+pubDate: 2005-06-01
+redirect_from: 
+            - https://gazer.com.ar/2005/06/01/juegos-con-j2me/
+categories: "j2me, java, Programación, videojuegos"
+heroImage: 'https://www.gazer.com.ar/wp-content/j2me_pacman_1_mini.png'
+---
+[![PacMan!](https://www.gazer.com.ar/wp-content/j2me_pacman_1_mini.png)](https://www.gazer.com.ar/wp-content/j2me_pacman_1.png)Ya he repetido una y otra vez lo que opino de Java, pero también en el último tiempo vengo diciendo que veía con buenos ojos J2ME, la edición para dispositivos móviles de esta plataforma. Mi interés inicial es hacer juegos con ella, por lo que en el último mes vengo lentamente avanzando en un juego totalmente innovador, nuevo y de concepto radical : un PacMan :-)
+
+La primera aproximación del juego es funcional, tenemos a PacMan que se mueve, detecta choques, _come_ pastillitas y todo eso. También tenemos unos fantasmas medio _lelos_, que se mueven de manera pseduo-aleatoria, con una simple [máquina de estados finidos](http://es.wikipedia.org/wiki/Aut%C3%B3mata_finito).
+
+Claro que el código apesta, es una mugre que fui toquetando a lo largo de un mes, mientras iba de tutorial en tutorial, pasando por la documentación de la API, pero se puede mejorar sin mucho esfuerzo. A nivel de implementación gráfico también apesta, ya que no uso backbuffering, lo que me obliga a redibujar la totalidad de la pantalla en cada iteración.
+
+En fin, es un proyecto que me está gustando hacer, la plataforma está muy bien pensada (no así J2SE :-)) y creo que tiene un futuro en mis desarrollos. Lo interesante es toda la movida que se está lanzando sobre APIs 3D, que cada día más modelos de celulares soportan una calidad gráfica 3D que sorprende.
+
+La imagen que adjunto es un screenshot del emulador de Sun con el juego en acción.

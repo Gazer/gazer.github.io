@@ -1,0 +1,43 @@
+---
+title: '¡Falta Uno!'
+description: ""
+pubDate: 2008-04-14
+redirect_from: 
+            - https://gazer.com.ar/2008/04/14/falta-uno/
+categories: "futbol, General, Programación, ruby on rails"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hace un par de años, enojado por lo difícil que era organizar un partido de fútbol con mis amigos, me puse a desarrollar una paginita web pedorra en PHP para organizar partidos. Obviamente, como muchas de las cosas que empiezo, quedó en la nada. Si bien funcionaba, no me calente en ponerlo online ni comentarlo con mis amigos.
+
+Hace dos semanas la idea reflotó, principalmente porque quería sumar experiencia en [Ruby On Rails](http://www.rubyonrails.org/), por lo que decidí subir la apuesta. De eso se trata ¡[Falta Uno!](http://www.falta-uno.com.ar).
+
+La idea es **simple** : te registrar, te relacionas con tus amigos, creas un partido y despues se van anotando. En la página se puede ver quiénes se anotaron y un pequeño board para postear mensajes por si acaso (vale putear, organizar quién juega con quién, etc), así como los datos de la cancha, hora y demás.
+
+Ahora bien, no hace falta que todos los que van a jugar tengan cuenta. **¿Por qué?** Simplemente porque si no la cosa no funcionaría :).
+
+Con mi grupo de amigos suele pasar lo siguiente : 3 horas antes de que empiece el partido llega un mail diciendo _"me bajo porque me duele la uña"_, y le sigue un mail con "_uhhh, che, falta uno, quien consigue ??"_.
+
+Este sujeto que aparece a último momento, es muy probable que sea el _primo del tio de un amigo de un amigo_, y casi seguro que no tendría cuenta y mucho menos relación de amistad con el creador de un partido (para poder anotarte a un partido tenés que ser amigo del creador por ahora).
+
+Entonces?, bien, el sistema permite anotar a un "_guest player_", poniendo solo el nombre y ocupando la plaza y así se mantiene simple la creación del partido.
+
+Otro feature que se agrega, que es totalmente opcional y lo hice porque me gusta tenerlo en cuenta, es poder votar como jugaron tus amigos en ese partido. Hay 5 categorías para puntuar entre 1 y 5, y luego entre todos los votos se calcula el promedio por partido, y también un promedio general por usuario.
+
+Este último feature es totalmente opcional y puede ser omitido si no tenés ni tiempo ni ganas de usarlo :).
+
+En fin, el site no creo que tenga mucho éxito, si lo tiene, groso :), pero por lo menos mis amigos y yo vamos a dejar de putear para organizar un _picadito_.
+
+Algunos datos "técnicos" sobre lo usado :
+
+- Ruby On Rails 2.0.2
+
+- Plugins
+
+  - attachment_fu : Para upload de avatars
+  - has_many_friends : Relaciones de amistad entre usuarios
+  - restful_authentication : No puede faltasi hay un login :)
+  - will_paginate : Tengo que migrar a usar la versión en gema.
+  - calendar_helper : Para armar el calendario de partidos
+  - simple_format : Para formatear el texto plano de los comentarios.
+
+- Server : mongrel/ apache (mod_balancer+ mod_rewrite) / mysql

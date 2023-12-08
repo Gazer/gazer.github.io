@@ -1,0 +1,61 @@
+---
+title: 'Finding Boost - Primera parte'
+description: ""
+pubDate: 2007-07-27
+redirect_from: 
+            - https://gazer.com.ar/2007/07/27/finding-boost-primera-parte/
+categories: "Programación"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hace varios días que Matías anda pregonando lo bueno que es C++ y lo bueno que es [Boost](http://www.boost.org/), y trata de _evangelizarnos_ a todos en el LUGFI, donde, creo que no estoy errado, todos odiamos C++ por una u otra razón :).
+
+Los _flames_ en el IRC se hicieron largos, y antes de seguir opinando lo mismo que sostenía me decidí a probarlo un poquito a ver que onda. Quiero dejar en claro que mantengo mi postura. Si bien encontre en boost algunas herramientas muy útiles, no considero que C++ es "programar como se programa en boost", y C++ sigue siendo horrible :). Más fácil/lindo quedará todo con boost, pero no cambia la raíz de mi enemistad con el lenguaje base.
+
+Para probar todo esto decidí reflotar un proyecto que hice hace muchos muchos años llamado GCP (_Gazer Compiler Plus_, muy original, no?), que no creo haber publicado nunca y que no verá la luz. El proyectito tenía como objetivo implementar un un algoritmo para resolución de ecuaciones utilizando notación polaca. Todo lo que está arriba es para que tenga sentido. Hay un lenguaje definido (básicamente un gwbasic recortado) que compila a un bytecode, y éste último se ejecuta en una máquina virtual de un solo registro.
+
+Lo primero que rescato al pasar de C a C++, es obviamente el uso de la STL. Manejar una lista, una pila y los strings son mucho menos dolorosos. El primer problema que ya me disgustó fue al momento de abrir un archivo y leerlo línea a línea, debiendo utilizar la siguiente sentencia :
+
+```
+getline(file, line);
+```
+
+¿Qué tiene de malo?, que es un hack horrible, porque el método _file.getline_ no soporta string!. Digo yo, costaba mucho tener el prototipo _string file.getline()_ ?
+
+Luego llegú el turno de usar boost. Lo primero que me encontré fue que necesitaba algo para castear de string a int, que no sea atoi :) y encontré [boost::lexical_cast](http://www.boost.org/libs/conversion/lexical_cast.htm), un template muy cómodo y que tira una hermosa exception cuando algo falla para poder manejar el error con un try/catch. Un mini ejemplo :
+
+```
+    int tmp = boost::lexical_cast("125");
+```
+
+El siguiente paso fue reemplazar mi string tokenizer por algo más copado, así que decidí usar [boost::tokenizer](http://www.boost.org/libs/tokenizer/tokenizer.htm), y fue mi primer pared. Lo que yo estaba usando era lo siguiente, sacado de la documentación oficial :
+
+```
+    tokenizer tok(line) ;
+```
+
+Claro que todo lo que reluce no es oro, por lo que eso no anduvo. La razón es que al parecer alguien dentro de boost dijo : "separemos por espacios por default, y borremos todo lo que no sea alfanumérico". Lo que yo tenía que separar era algo como "let y = y + 1", por lo que mi signo igual desaparecía mágicamente, lo que tarde como media hora en darme cuenta y recurrí a matias en busca de ayuda. El truco estaba en definir tu propio tokenizer que haga lo que vos quieras, de la siguiente manera :
+
+```
+   typedef tokenizer< char_separator > MyTokenizer;
+   MyTokenizer tok(line, char_separator(" "));
+   MyTokenizer::iterator token;
+```
+
+Yo seguiré insistiendo que es un comportamiento no esperado para un tokenizer default :), más aún si en la documentación no lo aclaran. Otro problema que encontré, que no me gustó nada, es que me desayuné que los amigos de C++/boost hacen assert y te hacen explotar el programa de onda ;). La "excusa" de matias es que "esa condición es un bug y deberías arreglarlo", en lo que estoy en parte de acuerdo. Pero explotar mi programa no va a hacer que lo arregle más rápido :). La política de manejo de errores "irrecuperables" (en este caso era incrementar un iterador pasado su fin) no es de mi agrado, prefiero sacrificar esa _"performance"_ extra de C++ por la libertad de mi C# de hacer las cosas como a mi me gustan :).
+
+Para la salida con formato estuve usando [boost::format](http://www.boost.org/libs/format/doc/format.html), y la verdad que printf no tiene nada que envidiarle. La innecesaria utilización del operador "%" como separador de los parámetros en lugar de una simple coma, es algo que no entiendo. Me hace pensar lo mismo que cuando lei sobre Nullable Types en C#, que utilizan una sintaxis confusa como "int? a;".
+
+Y hasta ahí llego mi aventura por el momento. Para completar el post de mis algoritmos me estarán faltando hacer dos cosas :
+
+- Reemplazar las funciones con ifs/switchs por unos std::map para mapear los códigos de instrucción
+- Cambiar el array de la tabla de memoria interna por [boost::bimap](http://cablemodem.fibertel.com.ar/mcape/oss/projects/mc_projects/boost_projects/boost_bimap.html) para tener un mapa en dos direcciones, útil poder buscar direcciones de memoria de un símbolo o el símbolo en una dirección de memoria de una manera bonita (y según matias, optimizada ;))
+- Ver [boost::spirit](http://spirit.sourceforge.net/), que se supone que puedo definir un parser loco para mi lenguaje y no tener que hacerlo a mano como lo quise hacer yo (que como dije antes, la gracia del proyecto era hacerlo a mano). Lo voy a mirar solamente de curioso que soy.
+
+En lo que llevo de esta experiencia no va mejorando mucho la forma de pensar. Seguramente con bimap levante un par de puntos, pero no creo que mucho más :). El último dato de la noche :
+
+```
+   -rwxr-xr-x 1 gazer gazer 121K jul 27 02:13 ../cpp/gcp
+   -rwxr-xr-x 1 gazer gazer  18K jul 27 02:12 gcp
+```
+
+El primero es en C++ (no esta completo el programa, hay cosas que no hace todavía), el segundo en C. Ambos con gcc 4.1.2, -O2, y pasandole un strip por las dudas :) .... Siento que tengo 103kb desperdiciados :D.

@@ -1,0 +1,30 @@
+---
+title: 'NgSpice ha vuelto!'
+description: ""
+pubDate: 2006-09-27
+redirect_from: 
+            - https://gazer.com.ar/2006/09/27/ngspice-ha-vuelto/
+categories: "Oregano"
+heroImage: '/img/uploads/2006/09/ngspice.png'
+---
+Luego de haber sido mutilado, el soporte de NgSpice para [Oregano](http://oregano.gforge.lug.fi.uba.ar/) fue reescrito hoy. No está probado ni el 10% de todo lo que debería funcionar, pero ya me doy por satisfecho y es ahora de que me siente a esperar los reportes de los usuarios (Ping Tulku!!) con sus afamados problemas :-).
+
+El parser nuevo, a diferencia del viejo estilo preprocesado en perl externamente al programa, utiliza el formato RAW que exporta NgSpice, haciendo mucho más simple la lectora de los valores de los análisis, sin tener que parsear texto.
+
+El shot obligado :
+
+[![ngspice.png](/img/uploads/2006/09/ngspice.png)](/img/uploads/2006/09/ngspice.png "ngspice.png")
+
+Con esto ya estarán dadas las condiciones para hacer un nuevo release, que supongo que será este fin de semana, aprovechando que sigo de vacaciones :-). Hay varias cosas que ameritan este release :
+
+- Nuevo esquema para los engines : Más flexible, más prolijo, más fácil de extender a nuevos engines, y sobre todo, anda. \[1]
+- Scons cleanups
+- Instant-apply dialogs!
+- Nuevo log (colorsitos, ordenado, etc)
+- El ProgressDialog ahora muestra que operación se está realizando
+- Models y SubCKT
+- Menu cleanup
+- Mejora en la ventana de ploteo : los ejes son mas claros y se muestra la unidad actual en lugar de usar notacion cientifica.
+- Unos cuantos bugs de usabilidad y detalles reportados por Tulku!
+
+\[1] : Antes la salida de ngspice cambiaba segun detalles de la simulacion (db, no db, AC o Trans, etc) y el script en perl se colgaba mal :-)

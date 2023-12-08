@@ -1,0 +1,20 @@
+---
+title: 'MySQL a CSV remotamente desde el shell'
+description: ""
+pubDate: 2009-07-31
+redirect_from: 
+            - https://gazer.com.ar/2009/07/31/mysql-a-csv-remotamente-desde-el-shell/
+categories: "bash, csv, GNU+Linux, mysql"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Algo que siempre me molestaba de cuando una campaña deja de correr era la molestia de los día siguientes : "me exportas a,c,b de tal tabla", "me das mejor b,a,c" y así sigue la molestia.
+
+Más que nada porque tenía que loggearme al DB server, hacer un dump o correr algún script de php para armarlo.
+
+Bueno, hoy buscando otra cosa caí sin querer en [este tip](http://snipplr.com/view/8801/execute-mysql-query-from-console-and-export-to-csv/) que usa el comando myql y sed desde el shell. Así que ahora puedo tirar la query por la VPN (bueno, cuando ande bien voy a poder :D) directo al DB server y mandar por email el CSV :).
+
+```
+mysql -u user -h host -p --execute="SELECT campo1, campo2, campoN FROM  table_name" database_name | sed 's/t/","/g;s/^/"/;s/$/"/;s/n//g'
+```
+
+Esto lo tira al stdout, agregando un "> output.csv" estamos hechos.

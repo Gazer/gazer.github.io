@@ -1,0 +1,22 @@
+---
+title: 'GDA - Gazer Darcs Server'
+description: ""
+pubDate: 2004-12-01
+redirect_from: 
+            - https://gazer.com.ar/2004/12/01/gda-gazer-darcs-server/
+categories: "Programación"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Eso mismo, hoy me encargué de crear mi repositorio [Darcs](http://www.abridgegame.org/repos/darcs/) para ver de que se trata. Aunque no tengo ni idea si estoy dejando mi vida en manos del mundo, les dejo la dirección de mi server : https://www.gazer.com.ar . Si alguno sabe que debería cerrar algo o restringir lo otro, por favor avise :-), no he tenido tiempo de terminar de leer la documentación.
+
+Como ejemplos de prueba he puesto unos demos de la bibliteca SDL que hice hace mucho tiempo, y que creo que aún son compatibles con la API 1.2 de dicha biblioteca, si no lo son, se aceptan parches ;-)
+
+Todavía tengo que resolver algunos problemas con el envío de mails, ya que no he terminado de entender como es este temita en darcs.
+
+**Update**: Hablando con albertito aprendí un poco más sobre Darcs. Lo más difícil es pensar que los repositorios son distribuídos, ya que uno está muy acostumbrado a pensar en repositorios centralizados. También modifiqué la configuración de mi [Apache](http://www.apache.org "Apache Web Server"), ya que el CGI funciona solo como un viewcvs. Los repositorios se encuentran entonces en <https://www.gazer.com.ar/repos/>. Por ejemplo , para obtener el ejemplo de rotar una imagen con SDL solo basta hacer :
+
+```
+ #> darcs get https://www.gazer.com.ar/repos/rotar
+```
+
+El único problema que le encuentro al método HTTP es que no conserva los permisos de los archivos, por lo que los scrips (como el configure) pierden sus permisos :-( ...

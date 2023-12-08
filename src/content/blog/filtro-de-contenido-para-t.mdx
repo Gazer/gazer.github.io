@@ -1,0 +1,64 @@
+---
+title: 'Filtro de Contenido para T!'
+description: ""
+pubDate: 2011-05-11
+redirect_from: 
+            - https://gazer.com.ar/2011/05/11/filtro-de-contenido-para-t/
+categories: "Programación, ruby"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hoy estuve leyendo [este](http://www.taringa.net/posts/taringa/10557222/La-situacion-de-Taringa_-explicada-por-nosotros.html) post donde los dueños de Taringa declara que "no podemos investigar el destino final de cada uno de los 20.000 post diarios". Lejos de ser algo "colectivamente inteligente" como declaración, es una terrible boludez :). Con aplicar algunos filtros automáticos, permitir que cualquiera de forma rápida y fácil reporte los contenidos ilegales y actuando más o menos rápido en su eliminación uno se cubre el 90% del orto. El otro 10% hay que pelearlo por carta documento porque hay gente muy al pedo ahí afuera, pero ni en pedo llegamos a un juicio oral teniendo un poco de criterio :).
+
+El problema es que filtrar a mano es caro, y además filtrar hace que nuestros usuarios bajen pues no tiene ya toda la piratería al alcance de la mano ;). Pero veamos como hacer un filtro para determinar por heurística los posts que posiblemente sean ilegales, de manera de poder revisar a mano solo los que tal ve son malos, y así bajar el trabajo necesario y por ahí bajar el costo y aumentar el profit :).
+
+No lo voy a explicar muy en detalle, pero básicamente el programa siguiente hace un scraping de la home de T! y agarra los 'Ultimos posts'. Para cada uno de ellos, lee el contenido y aplica una heurística muy básica para ver si es potencialmente ilegal :
+
+```
+require 'rubygems'
+require 'net/http'
+require 'hpricot'
+
+AGENT = "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.10) Gecko/20100915 Ubuntu/10.04 (lucid) Firefox/3.6.10"
+
+url = URI.parse("http://www.taringa.net/")
+http = Net::HTTP.new("www.taringa.net")
+html = http.request_get('/', {'User-Agent' => AGENT})
+
+doc = Hpricot(html.body)
+(doc/"html/body/div[2]/div[4]/div[4]/div/div[2]/ul/li/a").each do |link|
+  text = http.request_get(link.attributes['href'], {'User-Agent' => AGENT})
+  doc1 = Hpricot(text.body)
+  content = (doc1/"html/body/div[2]/div[4]/div[4]/div/div[2]/div[2]").first.to_s
+
+  if (content =~ /megaupload/i) || (content =~ /free/i) || (content =~ /mediafire/i) || (content =~ /fileserve/i)
+    puts "#{link.inner_html.strip} posible post ilegal"
+  else
+    if (content =~ /Este post es privado/i)
+        puts "#{link.inner_html.strip} es privado. Al menos si es ilegal no lo ve todo el mundo :)"
+    else
+      puts "#{link.inner_html.strip} parece legal."
+    end
+  end
+end
+```
+
+Con esto podemos saber :
+
+- Cuantos posts parecen legales
+- Cuantos parecen ilegales
+- Cuantos no son públicos, por lo que podemos revisarlos o no, no es tan terrible
+
+Con un poco de bash sacamos las stats :
+
+```
+gazer@Max:~$ ruby tfilter.rb > post.txt
+54 post.txt
+gazer@Max:~$ grep 'posible post ilegal' post.txt | wc -l
+2
+```
+
+Solo el **3.7%** de los posts analizados parecería ser ilegales, por lo que en lugar de tener que revisar 20.000 posts por día solo deberia revisar 740, el número es otro. Si de esos ademas sumás el report del user, seguro no te quedan mucho más y hasta por ahí lo podés moderar mientras desayunas :).
+
+Obviamente mi filtro se basa solamente en linksharing (que es el 90% del problema de T! y del uso que sus usuarios le dan al site). Seguramente haya servicios de upload que no puse, pero para demostrar que filtrar el contenido es una terrible pelotudez y que Taringa! no lo hace porque no le conviene, alcanza y sobra :).
+
+[Posts analizados](https://www.gazer.com.ar/wp-content/uploads/2011/05/post.txt)

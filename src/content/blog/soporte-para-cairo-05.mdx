@@ -1,0 +1,33 @@
+---
+title: 'Soporte para Cairo 0.5'
+description: ""
+pubDate: 2005-06-28
+redirect_from: 
+            - https://gazer.com.ar/2005/06/28/soporte-para-cairo-05/
+categories: "Oregano"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hoy en los entremedios de estudio (esta semana estoy en el horno con la facultad) estuve trabajando en dar soporte a cairo 0.5. No fue difícil, en la mayoría de los casos con reemplazar nombres de funciones alcanzó.
+
+Lo más complejo fue sin duda el manejo de superficies. Ahora cuando se crea un _contexto cairo_ se le debe pasar la superficie sobre la cual dibujar (cambio muy lógico por cierto). Como usamos el backend Xlib, necesitamos 3 datos : Drawable, Display y Visual, cosas nada triviales de obtener un widget Gtk. En la documentación de Gdk está todo, pero costó encontrarlo. El resultado resumido a continuación :
+
+```
+  GdkDrawable* real_drawable;
+  Display* dpy;
+  Drawable drawable;
+  gint x_off, y_off;
+  gint width, height;
+  gdk_window_get_internal_paint_info (window, &real_drawable, &x_off, &y_off);
+  dpy = gdk_x11_drawable_get_xdisplay (real_drawable);
+  drawable = gdk_x11_drawable_get_xid (real_drawable);
+  gdk_drawable_get_size (real_drawable, &width, &height);
+  target = cairo_xlib_surface_create (dpy, drawable,
+      gdk_x11_visual_get_xvisual (gdk_drawable_get_visual (real_drawable)),
+      width,
+      height);
+  cr = cairo_create (target);
+```
+
+Lindo, no?. El parche para probar está disponible ~~acá~~ (para aplicarlo : darcs apply oregano-cairo-0.5.patch). No lo voy a incluir en el repositorio hasta que Cairo 0.5 se empiece a ver _estable_ en las distros. Por ahora solo lo he visto en Ubuntu Breezy (que es donde hice el trabajo).
+
+Si alguien puede probarlo, se lo agradeceré. Aclaro que saque el exportar a PNG, aunque sería trivial rehacerlo.

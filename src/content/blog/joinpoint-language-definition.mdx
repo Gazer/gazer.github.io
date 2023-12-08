@@ -1,0 +1,105 @@
+---
+title: 'JoinPoint Language Definition'
+description: ""
+pubDate: 2009-06-19
+redirect_from: 
+            - https://gazer.com.ar/2009/06/18/joinpoint-language-definition/
+categories: "Mono, Tesis"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Luego de unos 15 días intensos sobre mi tesis ya tengo andando una pequeña parte andando de lo que será la nueva API, funcionando e integrada con el JIT.
+
+Antes de comentar como funciona vamos por el primer ejemplo que consta de dos partes. Por un lado una clase común y corriente que simularía ser la aplicación :
+
+```
+using System;
+public class Normal
+{
+    public Normal()
+    {
+        Metodo1(26);
+    }
+
+    public void Metodo1(int i)
+    {
+        Console.WriteLine("Aca");
+    }
+
+    static public void Main(string [] args)
+    {
+        new Normal();
+    }
+}
+```
+
+Y por otro una clase que solo tiene definiciones de JoinPoints (pueden estar mezcladas, no hace falta separarlo)
+
+```
+using System;
+using Weaving;
+public class Unused
+{
+     [RunBefore, JoinPoint("void", "Normal", "*", ParameterFlag.MATCH_ANY)]
+     public void Logger(int i, Context c)
+    {
+        Console.WriteLine ("Called Before with param "+i.ToString());
+    }
+}
+```
+
+Lo importante de esta segunda clase son los Attributes que se le agregan a los métodos (en adelante los llamaremos _callbacks_). _RunBefore_ lo que le indica es cuándo se debe correr el callback : en el ejemplo significa que debe ser antes de la ejecución del JoinPoint (sería el equivalente del BeforeAdvice de AspectJ).
+
+El Attribute JoinPoint lo que hace es materializar el JoinPoint en el JIT, para que el RunBefore lo pueda encontrar. Los parámetros que recibe son (cualquiera de las regex soporta los wildcards '\*' y '?') :
+
+- Return Type regex
+- Class Name regex
+- Method Name regex
+- Flags
+
+Para completar el regex contra el que se matchea, el Weaver toma los argumentos del Callback, en este caso lo que se intenta es anticipar la llamada de cualquier método de la clase Normal que reciba un int como primer parámetro y cuyo _return type_ sea void. El Flag MATCH_ANY indica que pueden haber otros parámetros, pero son ignorados por el callback. Si especificáramos MATCH_EXACT estaríamos buscando un método que tenga exactamente un argumento de tipo Integer.
+
+El útimo parámetro (Context) no se usa para el matching y es donde el callback recibe información del contexto sobre donde se está ejecutando (instancia interceptada, método interceptado, etc).
+
+Si compilamos y ejecutamos el ejemplo veríamos algo como lo que sigue :
+
+```
+[mono] ~/src/ejemplos @ gmcs -out:Normal.exe /r:Mono.Weaving.dll Normal.cs Unused.cs
+[mono] ~/src/ejemplos @ mono Normal.exe
+(1) [JIT] class Weaver loaded
+(2) [CS] ASSEMBLY LOADED: Normal, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+(3) [JIT] New pattern Defined : void Normal:* (int)
+(4) [JIT] Matched void Normal:Metodo1 (int) with void Normal:* (int)
+(5) [JIT] No instance object found. We need to create one
+(6) [JIT] I'll run callback Unused:Logger (int,Weaving.Context) over instance pointed at 0x62f90
+Called After with param 26
+Aca
+```
+
+Como se puede apreciar, antes de ejecutar el método _Metodo1_ se ejecutó el callback y recibió correctamente el parámetro original. Cabe aclarar que el weaving se está haciendo a nivel del JIT, intercalando el assembler generado para la plataforma donde se ejecuta, como [expliqué en el pasado](https://www.gazer.com.ar/2008/11/18/generando-assembler/).
+
+Paso entonces a describir un poco como funciona. Para empezar hay 2 partes, una en código manejado y otra en el JIT (CS y JIT en el output). La parte manejada se usa solamente para detectar cuando un nuevo Assembly es cargado, via AppDomain.CurrentDomain.AssemblyLoad, y ahí por Reflection se leen todas las clases que hay en el Assembly, se escanean los metodos buscando los joinpoints y se llama un método interno del JIT que es quién finalmente define el nuevo joinpoint en la VM.
+
+Esto esta así porque averiguando como hacerlo directo en C encontré varias referencias en la [lista de Mono](http://lists.ximian.com/mailman/listinfo/mono-devel-list) de que el loader en C es muy complejo (haciendo un trace pasé como por 20 funciones).
+
+Como el weaver debe existir antes de ejecutar la aplicacion, el JIT carga el Assembly `Weaving.dll` desde el GAC antes de cargar el .exe que se va a ejecutar y justo después de cargar el corlib (que debe ser cargada primero que nadie). Luego una instancia de `Weaving.Weaver` y la mantiene viva por el resto del ciclo de vida de la aplicación.
+
+Cuando el Loader detecta el Attribute de JoinPoint se llama a Weaver.DefineMethod que se mapea a una función en C. Ésta es la que emite el mensaje (2) creando la regex y guardando toda la metadata necesaria para ejecutar el matcher después.
+
+Otra tarea del loader es detectar si la sintaxis del callback es correcta, por ahora se valida lo siguiente :
+
+- Context no definido : Advice need at least one parameter of type Weaving.Context
+- Context de tipo inválido : Advice last parameter type XXXXX. Expected Weaving.Context
+- Callback no puede ser abstracto : Abstract Method can't be advices
+- Callback no puede ser un constructor : Constructors can't be advices
+
+Cabe destacar que estas exceptions no pueden ser capturadas en un try/catch y hacen que el programa aborte con un backtrace en la consola.
+
+Una vez inicializado y detectados los JoinPoint, a medida que la aplicación es ejecutada, para cada método ejecutado se hace un scan de los _patterns_ definidos y se testea contra la regex de cada uno, si alguna matchea arma la lista de parametros para el callback (tomando los valores originales con los que fue llamada la función interceptada).
+
+El callback tiene 2 comportamientos, dependiendo si el metodo es static o no. Si es STATIC, se ejecuta como STATIC de manera que es el mismo callback para cualquier match. Esto da un comportamiento similar al Singleton de AspectJ (ideal para un logger por ejemplo).
+
+Ahora, si el callback no es STATIC (como en el ejempo) por cada Signature que matchea se crea una instancia diferentes sobre la cual llamar el callback (ideal para un profiler, para saber cuantas llamadas tiene cada método, cada uno con su counter propio).
+
+Obviamente en los callbacks aplican las mismas restricciones que lo métodos comunes : los statics solo pueden acceder a miembros statics de la clase y los no statics los miembros de esa instancia.
+
+Y más o menos de eso se trata mi tesis :). Aún quedan muchas cosas por pulir, mejorar y documentar. La extracción de parámetros desde el stack no es trivial aunque por suerte el profiler de Mono hace algo parecido y calculo que basándome en ese código pueda sacarlo fácil.

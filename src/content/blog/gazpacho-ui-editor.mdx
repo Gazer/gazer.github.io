@@ -1,0 +1,18 @@
+---
+title: 'Gazpacho UI Editor'
+description: ""
+pubDate: 2005-02-03
+redirect_from: 
+            - https://gazer.com.ar/2005/02/03/gazpacho-editor/
+categories: "GNU+Linux, Programación"
+heroImage: 'https://www.gazer.com.ar/wp-content/gazpacho-mini.png'
+---
+Hoy charlando en #gnome-hispano me enteré de Gazpacho, un editor de UI para Gtk+/Gnome que pretende reemplazar a Glade. Este último tiene serios problemas desde sus comienzos, muchas veces nos da más problemas que soluciones.
+
+Gazpacho tiene la particularidad de ser, según recuerdo que me dijeron hoy, 90% compatible con libglade (por el momento), por lo que sería posible no tocar los programas. Lo que agrega, entre otras cosas, es soporte de Undo/Redo (y que funciona :-)), permitirá agregar CellRenderers, TreeColumns, etc a los widgets que los soportan; mejora la manera en que creamos los callbacks de los eventos. Se nota más cómodo de usar que Glade por lo que es un proyecto al que hay que estarle pendiente... La captura obligada :[](https://www.gazer.com.ar/wp-content/gazpacho.png)
+
+![](https://www.gazer.com.ar/wp-content/gazpacho-mini.png)
+
+Para obterlo : `svn co svn://www.sicem.biz/gazpacho`, necesitarán Python, Python-gtk (2.4.x), bueno, lean el README :-)
+
+Otra cosa que vi hoy, fue un pantallazo de Stetic, otro proyecto que pretende reemplazar a Glade, por parte de la gente del Mono (creo que esta hecho en C#, aunque no puedo confirarlo :-)), está muy verde, pero hay que darle tiempo.

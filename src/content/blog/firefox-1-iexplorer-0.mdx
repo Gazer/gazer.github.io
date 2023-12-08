@@ -1,0 +1,25 @@
+---
+title: 'Firefox 1 - IExplorer 0'
+description: ""
+pubDate: 2005-02-15
+redirect_from: 
+            - https://gazer.com.ar/2005/02/15/firefox-1-iexplorer-0/
+categories: "GNU+Linux"
+heroImage: 'https://www.gazer.com.ar/wp-content/moz_alert_mini.png'
+---
+En mi contínuo intento de completar la interfaz del nuevo sistema web que realizo para mi empleador, necesité consultar dinámicamente desde DHTML para no recargar mucho la página (efecto que no es del agrado de los usuario). Bien, mi código Javascript utiliza un iframe oculto y otras yerbas raras. El problema es saber cuando el iframe fue cargado completamente, por lo que utilicé el evento _onLoad_ para saberlo y llamar al callback que realiza la tarea de leer los datos. Mi sorpresa (más bien, lo comprobé) fue que en IExplorer no andaba, a pesar que, nuevamente, MSDN decía que si.
+
+Fue por eso que hice un pequeño hack :
+
+```
+  imp = document.getElementById ('importe');
+  while (!imp) imp = document.getElementById ('importe');
+```
+
+que espera a que la página sea cargada. Bien, lo probé en Windows y adivinen qué? 100% de uso del CPU y un IExplorer totalmente muerto ... kill -9 :P
+
+La gran sorpresa ... probé lo mismo en Firefox!, y aquí el resultado en formato gráfico :
+
+[![Firefox alert](https://www.gazer.com.ar/wp-content/moz_alert_mini.png)](https://www.gazer.com.ar/wp-content/moz_alert.png)
+
+Pues bien, se dió cuenta, me avisó y aborté el script :-) .. otro motivo más para usar Firefox.

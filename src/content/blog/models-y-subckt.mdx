@@ -1,0 +1,20 @@
+---
+title: 'Models y SubCkt'
+description: ""
+pubDate: 2006-09-05
+redirect_from: 
+            - https://gazer.com.ar/2006/09/04/models-y-subckt/
+categories: "Oregano, Programación"
+heroImage: 'https://www.gazer.com.ar/wp-content/uploads/2006/09/oreganomodels.thumbnail.png'
+---
+Una cosa que le venía faltando a [Oregano](http://oregano.gforge.lug.fi.uba.ar/) era la posibilidad de utilizar modelos complejos para la simulación, y que por suerte ya quedó en el pasado ;).
+
+Hoy luego de mucho leer sobre Spice, NgSpice y GnuCap logré entender un poco como se usan los modelos (a través del comando .model) y los subcircuitos (a través del comando .subckt). Esto sumado a la magia del .include hacen posible, por ejemplo, utilizar un componente "Diode Bridge" en lugar de tener que poner cuatro diodos :-).
+
+La historia empieza modificando el componente "Diode Bridge" de la biblioteca default para que en lugar de usar el template que no andaba utilice : X\_@refdes %1 %2 %3 %4 @model, siendo Mode = DiodeBridge. El X\_ le dice al backend que es una llamada a un subcircuito y @refdes es completado con el nombre elegido.
+
+El siguiente paso es crear un archivo [DiodeBridge.model](https://gazer.com.ar/repos/oregano-stable/data/models/DiodeBridge.model) en el directorio _data/models_ que contenga la descripción del circuito. El resto de la mágia está ya en el código de generación de la netlist.
+
+El objetivo ahora es tratar de extender más aún este nuevo _feature_ y para eso voy a empezar con los ejemplos que encontró [acá](http://www.allaboutcircuits.com/vol_5/chpt_7/7.html). Un punto importante y que yo realmente desconozco, es qué componentes son sumamente necesarios y deberían funcionar _out-of-the-box_. Si fuera por mí con resistencias ideales me sobra :P, por lo que escucho ofertas!. El screenshot obligado (perdón, la ventana de plot ocupa mucho lugar y me tapa el fondo :-))
+
+[![oreganomodels.png](https://www.gazer.com.ar/wp-content/uploads/2006/09/oreganomodels.thumbnail.png)](https://www.gazer.com.ar/wp-content/uploads/2006/09/oreganomodels.png "oreganomodels.png")

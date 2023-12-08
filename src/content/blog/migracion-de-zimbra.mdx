@@ -1,0 +1,30 @@
+---
+title: 'Migración de Zimbra'
+description: ""
+pubDate: 2009-06-16
+redirect_from: 
+            - https://gazer.com.ar/2009/06/15/migracion-de-zimbra/
+categories: "deploy, General, migracion, zimbra"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Este fin de semana me puse como objetivo migrar el mail server de la empresa que ya estaba haciendo agua. Corría sobre un server con un disco que daba errores de lectura, no había RAID y la última semana hubo un 90% de uso de CPU en I/O :).
+
+Arranqué el sábado al medio día y fue un día perdido. Tuve la loca idea de respetar la arquitectura del nodo para crear la VM y montar Zimbra en 64bits. Resulta que migrar el mail server a un nuevo servidor requiere de mucho _matching_ entre el origen y el destino, por lo que fue prácticamente imposible hacerlo. Recapacité por la noche y el domingo fui por un _aproach_ más conservador :).
+
+Lo primero a tener en cuenta para migrar este productor (que es all-in-one-fucking-package) es aceptar que hay que usar una de las distros soportadas, y no tratar de hacer magia (al menos para no sufrir y que salga andando).
+
+El proceso básico está en este [post](http://www.zimbrablog.com/blog/archives/2007/10/moving-zcs-to-another-server.html) y no parece complicado, pero hay varios obstáculos que pasar. Lo primero, es que hay que hacer una instalación dummy de zimbra con la misma versión que teníamos antes. Mi problema era que tenía una versión muy vieja de Zimbra y solo había paquetes para Debian y Ubuntu 6.06, pero yo quería al menos Ubuntu 8.04.
+
+El truco que usé fue editar /etc/debian_version y ponerle lo que espera y pasó sin problemas (calculo que por mero azar :D).
+
+Una vez eso el resto fue copiar con _rsync_ de un server a otro (25Gb tardan MUCHO, pero MUCHO!) y ejecutar el installer de la nueva versión, que tardó también como 6 hs en actualizar las tablas de MySQL. Esto último creo que fue causa de que el logger en el server viejo no estaba limpiando después de procesar, por lo que había muchos logs y eso hizo que demore tanto.
+
+La migración fue perfecta, sin errores, pero teniendo problemas con el LDAP. Confieso que odio ldap e iba a decir "_hasta acá llegué, lo dejo_" pero apareció rápidamente en el wiki la solución : [regenerar los certificados](http://wiki.zimbra.com/index.php?title=SSL_Certificate_Problems). Anduvo en el primer intento.
+
+Cosas a tener muy en cuenta por si les toca :
+
+- El nuevo server debe tener el mismo Domain Name y MX record a puntados (la ip puede cambiar, pero el DNS debe estar actualizado)
+- Bloquear el puerto 25 mientras se migra, asi en el nuevo server no empiezan a entrar mails hasta que no estemos seguros de que anda
+- Hacer backup antes de borrar algo :)
+- Usar solo las distros/versiones soportadas, ahorra miles de dolores de cabeza
+- Planificar con tiempo la copia de archivos, puede tardar más de lo que uno cree :)

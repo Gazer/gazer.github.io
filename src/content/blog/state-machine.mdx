@@ -1,0 +1,80 @@
+---
+title: 'State Machine'
+description: ""
+pubDate: 2008-12-08
+redirect_from: 
+            - https://gazer.com.ar/2008/12/08/state-machine/
+categories: "Programación, ruby, videojuegos"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Varios días atrás tuve que hacer un juego simple, un memotest para ser exacto, para correr en unos "kioskos" para un cliente. Ya que tenía pendiente aprender a usar RubyGame, lo hicimos con este framework para ver que onda, ya que hasta ahora veníamos usando pyGame.
+
+El juego salió super rápido, sin mayores problemas, pero la lógica de juego no me gustaba porque teníamos que andar trackeando el estado actual a mano, muchos ifs y comprobaciones que hacían del loop de juego un choclo de código.
+
+Es por eso que me puse a ver un poco como aprovechar el tener bloques de código para encapsular la lógica del juego un poco más prolijo. Antes de comenzar encontré la gema [Statemachine](http://statemachine.rubyforge.org/) pero a primera vista no la entendí mirando los ejemplos :) y luego de jugar un rato no me terminó de convencer ya que parece mucho más de lo que yo necesitaba.
+
+El resultado de un par de horas de tirar "magia" fue poder definir la lógica de la siguiente manera (el ejemplo está simplificado, omitiendo los efectos y parte de la lógica) :
+
+```
+class Logic
+  include StateMachine
+  # Esperando interacción del usuario
+  state :user_input do
+    @events.each { |event|
+      case event
+      when MouseDownEvent
+        selected event.pos
+      when QuitEvent
+        end_game
+      end
+    }
+  end
+
+  # Oculta las piezas seleccionadas cuando no hubo match
+  state :clear do
+    @selected.each {|f| f.hide }
+    @selected = []
+  end
+
+  # Cambio de estado
+  transition :user_input, :clear do
+    @selected.size == 2
+  end
+
+  # Cambio de estado
+  transition :clear, :user_input do
+    true
+  end
+end
+```
+
+Cada declaración de `state` tiene el código que se debe ejecutar cuando estamos en dicho estado, mientras que las `transition` son usadas automáticamente para saber a qué estado nos debemos mover. La primer `transition` que retorne `true`, se toma el estado destino y se asigna como el actual.
+
+Por el lado del game loop, lo único que se debe hacer es llamar a un método que se encarga de ejecutar el estado actual y luego verificar si alguna transición retorna "true" y se cambia al nuevo estado.
+
+```
+class Game
+  include Rubygame
+  include Logic
+
+  def event_loop
+    loop do
+      current_state
+
+      return if game_ended?
+
+      draw
+      @clock.tick
+      @screen.update
+    end
+  end
+end
+```
+
+En `Game` hay otros métodos auxiliares como `game_ended`, `draw` y `selected`, que no vienen mucho al caso en este momento.
+
+El próximo paso ahora es limpiar un poco esto, ver si no hay una forma mejor de hacerla y publicar el esqueleto completo (la idea a futuro es tener un generator) para poder tener un mini framework para hacer juegos simples.
+
+Si buscan un framework interesante les recomiendo [Shattered Ruby](http://www.shatteredruby.com/) ([git repo](http://github.com/mikkel/shattered/tree/master)), aunque al momento de escribir este post el sitio principal no responde.
+
+[state_machine.rb](https://www.gazer.com.ar/wp-content/uploads/2008/12/state_machine.rb)

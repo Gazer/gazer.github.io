@@ -1,0 +1,18 @@
+---
+title: 'Cómo perder un bit'
+description: ""
+pubDate: 2008-12-03
+redirect_from: 
+            - https://gazer.com.ar/2008/12/02/como-perder-un-bit/
+categories: "C#, Mono, Programación, serial port"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Un proyecto que hicimos a principio de año es un soft que maneja una PC para una rockola con su respectiva interfaz de hardware ("la caja" de ahora en más) para interactuar con la botonera. En estos días el cliente nos pidió que agregaramos alguna validación para que la caja y el programa se aseguren que son "originales" (no es algo que me agrade agregar, pero el software es del cliente).
+
+En fin, la cosa es que estuve todo el viernes y todo el lunes sin poderlo hacer andar. La caja me respondía perfecto salvo en un caso: cuando me llegaba 0x3F pinchaba. Lo peor es que era un valor que me llegaba sospechosamente seguido para ser aleatorio.
+
+Le dimos mil vueltas con Tulku hasta que finalmente encontramos el problema, que obviamente era yo :), o más bien la implementación de [SerialPort](http://msdn.microsoft.com/en-us/library/system.io.ports.serialport.aspx) de .NET (de Microsoft al menos, el programa no corre en Mono todavía) que tiene defaults ridículos :).
+
+El problema era que yo estaba usando un método que lee todo lo que está pendiente, pero justo ese método pasa los bytes por un Encoder, ¿y a que no adivinan? ... Si, el Encoder por default es _ASCII7BIT_, por lo que me tiraba a la basura el bit más significativo del byte leído, haciendo que no hubiera chance de responder correctamente para terminar el handshaking.
+
+Reemplazando el método por un while y leyendo byte a byte de manera RAW, el problema se solucionó.

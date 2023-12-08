@@ -1,0 +1,28 @@
+---
+title: 'Jugando con ActionScript 3.0'
+description: ""
+pubDate: 2007-07-05
+redirect_from: 
+            - https://gazer.com.ar/2007/07/04/jugando-con-actionscript-30/
+categories: "Programación"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Estuve jugando con esta nueva versión del lenguaje, que se basa ECMAScript, utilizado por Macromedia Flash (que se introduce en Flash Creative Suite 3 y que creo que todaía no salió al público).
+
+Las mejoras al lenguaje se notan "cuando las papas queman" (por lo menos en las cosas que probé) y han arreglado varios de los problemas de ActionScript 2.0 que eran muy molestos. Algunos detalles :
+
+**Runtime Exceptions** : Antes cuando ocurria un error en runtime (por ejemplo si llamabamos a un método que no existía) Flash simplemente pasaba de largo para evitar errores "feos" como los que pasan con JS en el browser. Claro, debbugear un problema así es muy molesto, cualquier typo pasa desapercibido. Ahora se pueden activar estos errores.
+
+**Sealed Classes** : En AS 2.0, uno puede agregarle cualquier cosa a cualquier clase (al estilo de Python) en cualquier momento. Si uno quiere ahora puede "blockear" la clase para que en Runtime no se le pueda agregar nada más. Las ventajas práctica son : minimiza el consumo de memoria ya que no tiene el hash interno para soportar el "dinamismo"; y ayuda a minimizar errores boludos (ya que ahora va a tirar un Runtime Exception por lo dicho anteriormente). De todos modos, podemos usar clases totalmente dinámicas si queremos.
+
+**Method closures** : Tal vez lo más importante que arreglaron :). Antes había métodos anónimos, pero al invocarlos se perdía el contexto de donde fueron creados, teniendo que guardar uno el entorno donde se ejecutaba. Si bien en AS 2.0 hay un workarround usando la clase Delegate, era molesto. Ahora hay closures de verdad.
+
+**ECMAScript for XML** : AS 3.0 introduce esta nueva extensión del lenguaje para manipular XML que hablando profesionalmente, le rompe el _totó_ a DOM :) (en comodidad, el resto ni idea :P). Esto hace que uno manipule XML como si fuera un tipo nativo y a la vez es un stream.
+
+**Regular expressions** : Muy útil :)
+
+**W3C DOM Events** : El manejo de eventos se cambio por un estandar de la W3C. Todavía no vi mucho de como se usa, pero lo veo como un cambio positivo.
+
+[MTASC](http://www.mtasc.org/) todavía no tiene soporte de AS3, por lo que habrá que esperar para los que quieren la solución libre.
+
+Creo que eso destacaría por ahora. ~~Feliz Día de la Independencia~~!!! ... a no, eso es en el otro pais :D

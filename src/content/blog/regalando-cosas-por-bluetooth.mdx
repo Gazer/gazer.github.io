@@ -1,0 +1,47 @@
+---
+title: 'Regalando cosas por Bluetooth'
+description: ""
+pubDate: 2009-08-12
+redirect_from: 
+            - https://gazer.com.ar/2009/08/12/regalando-cosas-por-bluetooth/
+categories: "bluetooth, GNU+Linux, j2me, Programación, ruby"
+heroImage: '/blog-placeholder-about.jpg'
+---
+El año pasado Movistar había lanzado una campaña muy pedorra en el subte, en donde unos carteles en el piso te invitaban a prender tu Bluetooth y te enviaban un file. Lo que te enviaban era una simple imagen, con tanto texto que en mi celular era casi ilegible y no tenía consigna alguna.
+
+Sin embargo esto sirvió para que me encaprichara y quisiera armar algo similar para la oficina, orientado a que un cliente que viene a una reunión se pueda llevar un regalo, que en este caso es un juego J2ME.
+
+Hacerlo realmente es una boludez. El real problema, que no voy a tratar acá, es tener una placa Bluetooth soportada por Linux (creo que esta solución aplica Windows, pero no lo probé), lo que puede resultar complicado. Yo en mi anterior laptop fallé en cada intento. Hoy en día en mi MacBook anda todo out-of-the-box por suerte así que pude jugar un poco.
+
+El protocolo que se utiliza para intercambiar cosas es Object Exchange (OBEX) y tenemos una excelente biblioteca llamada [OpenObex](http://dev.zuckschwerdt.org/openobex/). A nosotros nos interesa particularmente ObexFTP que nos da el File Transfer sobre Obex.
+
+El primer problema que tuve es que en Jaunty no está el binding de ruby, por lo que me tuve que bajar el [source y diff](https://launchpad.net/ubuntu/karmic/+source/obexftp/0.22-1) de Karmic y crear mis libobexftp-ruby_0.22-1_i386.deb y sus dependencias.
+
+Salvando eso, con los ejemplos del [wiki](http://dev.zuckschwerdt.org/openobex/wiki/ObexFtpExampleClientRuby) sale muy fácil. La biblioteca nos permite descubrir devices, abrir channels y enviar archivos en pocas líneas. Acá un en ruby ejemplo :
+
+```
+#!/usr/bin/env ruby
+
+require 'obexftp'
+
+puts "Scanning BT..."
+intfs = Obexftp.discover(Obexftp::BLUETOOTH)
+dev = intfs.first # Es un array, podríamos iterar sobre todas las encontradas
+
+channel = Obexftp.browsebt(dev, Obexftp::PUSH)
+
+cli = Obexftp::Client.new(Obexftp::BLUETOOTH)
+puts cli.connectpush(dev, channel)
+puts cli.put_file('ver.jpg')
+puts cli.disconnect
+```
+
+Hacer lo mismo en Python, Perl o cualqueir otro [lenguaje soportado](http://dev.zuckschwerdt.org/openobex/wiki/ObexFtpBindings) es igual de simple.
+
+Obviamente es muy minimalista: agarra el primer device encontrado, abre un channel para hacer un PUSH (si el device no soporta PUSH retorna -1 según creo), luego abre la conexión y le envía el archivo.
+
+Desde el celular vemos un mensaje de que se está abriendo una conexión y luego el detalle de lo que se quiere enviar, nombre del archivo, tipo de archivo, tamaño, etc. Podemos aceptarlo o rechazarlo. De aceptarlo se descarga pero no se guarda ni se instala, es un paso extra que debemos decidir si lo hacemos o no.
+
+Un problema que encontramos para enviar juegos es que algunos celulares están bloqueados para esa función (para así vendértelos por el portal WAP oficial de tu carrier). Ya lo pudimos probar con varios celulares Nokia, Motorola y Samsung y funciona razonablemente bien.
+
+Sobre este ejemplo nosotros tenés un poco más de trabajo, ya que guardamos los device ID y el contenido enviado, así cuando volvés te damos un contenido diferente :). Si además no podés recibir el juego, te pasamos una imágen simpática :P.

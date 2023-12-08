@@ -1,0 +1,119 @@
+---
+title: 'Lo que viene en Rails 2.2'
+description: ""
+pubDate: 2008-10-27
+redirect_from: 
+            - https://gazer.com.ar/2008/10/27/lo-que-viene-en-rails-2-2/
+categories: "active record, cache, i18n, Programación, ruby, ruby on rails"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Hace poco se anunció el RC1 de lo que será la versión [2.2](http://guides.rubyonrails.org/2_2_release_notes.html) de [Ruby on Rails](http://www.rubyonrails.com/). Si bien la fecha de salida es "cuando esté lista", ya se pueden utilizar para aquellos que gusten vivir "on the edge".
+
+Para aquellos que quieran un rejunte completo de todo lo que se viene pueden ver el post : [What's New in Edge Rails: Rails 2.2 Released - Summary of Feature.](http://ryandaigle.com/articles/2008/10/25/what-s-new-in-edge-rails-rails-2-2-released-summary-of-features)
+
+Yo acá voy a comentar solo lo que tuve la oportunidad de probar y que me resultó útil.
+
+## I18n
+
+La verdad es que es una buena noticia, no para mi porque hago todo para un solo idioma :P, pero algún día puede resultar útil. Lo único que a mi me deja con sabor a poco es la forma en que se hace que no me termina de gustar. Antes que nada quiero aclarar, porque ya vi la pregunta en un par de listas de correo, que esto localiza textos, no el contenido de una instancia de ActiveRecord. Si uno quiere que el contenido que cargan los usuarios sea traducido, es otra historia :).
+
+Las traducciones se escriben en ruby o en archivos YAML, con "hashes" que pueden estar anidados (como si fueran "_namespaces_") :
+
+```
+# lib/locale/en-US.rb
+{ 'en-US' => {
+  :hello_world => "Hello World",
+  :hello_flash => "Hello Flash"
+}}
+
+# lib/locale/pirate.rb
+{ 'pirate' => {
+  :hello_world => "Ahoy World",
+  :hello_flash => "Ahoy Flash"
+}}
+
+```
+
+Y luego en las vistas (o mailers o donde sea) en lugar de poner el texto se ingresa el symbol asociado al texto que cargamos en las traducciones, por ejemplo :
+
+```
+<h1></h1>
+```
+
+Mi problema particular con este método es que estoy mucho más acostumbrado a cómo se hace con gettext (que no necesariamente es la mejor forma) donde se ponen todos los textos en inglés en la aplicación y después se escriben las traducciones.
+
+Hay un demo online [acá](http://i18n-demo.phusion.nl/), que en estos momentos está caído, espero que para cuando lean esto ya este funcionando de nuevo.
+
+## Join Tables Conditions
+
+Esto es algo que realmente hacía falta. Vamos a ver la mejora con un ejemplo. Supongamos que tenemos los siguientes modelos :
+
+```
+class Article < ActiveRecord::Base
+  belongs_to :user
+end
+
+class User < ActiveRecord::Base
+  has_many :articles
+end
+```
+
+y queremos obtener todos los usuarios que tengan al menos un artículo publicado. Para eso deberíamos hacer :
+
+```
+User.find(:all, :joins => :article,  :conditions => ["articles.published = ?", true])
+```
+
+Con la nueva sintaxis es posible especificar este tipo de queries de una manera más amena como sigue :
+
+```
+User.find(:all, :joins => :article, :conditions => { :articles => { :published => true } })
+```
+
+## ActionMailer Layouts
+
+Algo que si me tocó vivir es tener varios emails HTML con un mismo formato y que cambiaba el contenido (Tu amigo te invitó, Tu nueva clave es, Ganaste un premio, etc). Con el mailer actual casi que hay que hacer un copy & paste del marco y despuer cambiar para cada tipo de email la lógica de qué se muestra.
+
+En rails 2.2 ahora vamos a tener layouts como los tenemos en ActionView, de manera de tenerlo una vez y si arreglamos o cambiamos algo cambia para todos.
+
+## Memoization
+
+Es muy frecuente que uno agregue lógica simple de caching en los modelos para las variables de instancia como se ve en el siguiente ejemplo :
+
+```
+  class User < ActiveRecord::Base
+    def full_name
+      @full_name ||= "#{first_name} #{last_name}"
+    end
+  end
+```
+
+Esto lo hacemos para evitar el overhead de crear el full_name si lo llegamos a usar varias veces en una misma vista, de manera que el string se crea en la primer llamada y en las siguientes solamente lo retorna.
+
+Los puristas dicen que en realidad está mal, porque se está responsabilizando al método de algo que en realidad no debería importarle : la política de caching. ¿Suena exagerado? Seguramente :).
+
+Para solucionar esto se agregó el método `memoize` que nos permite a agregar a un método común este tipo de lógica de manera separada :
+
+```
+  class User < ActiveRecord::Base
+    def full_name
+      "#{first_name} #{last_name}"
+    end
+
+    memoize :full_name
+  end
+```
+
+Esto se encarga de que cuando llamemos a `@user.full_name` se comporte de la misma manera que el primer ejemplo, sin tener que modificar el método. También nos permite saltarnos el "cache", por ejemplo si en la lógica acabamos de cambiar el nombre de pila, debemos forzar para que el nombre completo cambie :
+
+```
+   @user = User.new :first_name => 'Test', :last_name => 'Test'
+   @user.full_name # => Test Test
+   @user.first_name = 'Do'
+   @user.full_name # => Test Test
+   @user.full_name(true) # => Do Test
+```
+
+## Y más
+
+Hay varios cambios más, como Thread Safety, ETag, partial GETs y demás que a mi por ahora no me interesan y por eso no me entiendo mucho más. Pueden consultar el anuncio oficial para ver de que se tratan o cómo pueden hacerle la vida más fácil :).

@@ -1,0 +1,103 @@
+---
+title: 'Tablas rápidas para Grails'
+description: ""
+pubDate: 2015-05-02
+redirect_from: 
+            - https://gazer.com.ar/2015/05/02/tablas-rapida-para-grails/
+categories: "Programación"
+heroImage: '/blog-placeholder-about.jpg'
+---
+Si hay algo odioso cuando hay que hacer una interfaz de administración, es armar la lista para cada modelo del dominio para los AMBs. Esta semana me tocó mejorar el diseño para una aplicación grails, por lo que decidí ver como se podían generar "helpers" o TagLibs en nomenclatura grails.
+
+El siguiente código genera usando _bootstrap3_ una tabla con paginado, botón de editar y eliminar de forma genérica:
+
+```
+package test
+
+class ResourceTableTagLib {
+    /**
+     * Creates a bootstrap3 compatible datatable.<br>
+     *
+     * @emptyTag
+     *
+     * @attr list REQUIRED List of domain models to show
+     * @attr count REQUIRED Total registers (for pagination)
+     * @attr labels REQUIRED Comma-separated values for the columns headers
+     * @attr columns REQUIRED Comma-separated of model attributes to show
+     */
+    def table_for = { attrs ->
+        def writer = out
+        def list = attrs.list
+        def count = attrs.count
+        def labels = attrs.labels.split(/,/).collect { x -> x.trim() }
+        def columns = attrs.columns.split(/,/).collect { x -> x.trim() }
+
+        writer << '<div class="dataTable_wrapper">'
+        writer << ''
+        writer << ''
+        writer << ''
+        labels.eachWithIndex { a, i ->
+            writer << ""
+        }
+        writer << ''
+        writer << ''
+        writer << ''
+        writer << ''
+        list.eachWithIndex { a, i ->
+            writer << "  "
+            writer << "  "
+            columns.eachWithIndex { c, j ->
+                if (j != 0) {
+                    writer << ""
+                }
+            }
+            writer << '  '
+            writer << ''
+        }
+        writer << ''
+        writer << '<table class="table table-striped table-bordered table-hover" id="dataTables-example"><thead><tr><th>${a}</th><th></th></tr></thead><tbody><tr class="${(i % 2) == 0 ? 'even' : 'odd'}"><td>"
+            writer << g.link(action: "show", id: a.id, a."${columns[0]}")
+            writer << "  </td><td>${a."${columns[j]}"}</td><td>'
+            writer << g.form(url: [resource:a, action:'delete'], method: "DELETE") {
+                writer << g.link(class: "btn btn-default btn-sm", action: "edit", resource: a, "Editar")
+                writer << " "
+                writer << g.actionSubmit(class: "btn btn-danger btn-sm", action: "delete", value: "Eliminar", onclick: "return confirm('¿Eliminar curso?');")
+            }
+            writer << '  </td></tr></tbody></table>'
+        writer << '<div class="row">'
+        writer << '<div class="col-sm-6">'
+
+        def offset = params.offset as Integer ?: 0
+
+        def page_start = offset + 1
+        def page_end = Math.min(offset+10, count)
+
+        writer << "<div role="status" class="dataTables_info">Mostrando ${page_start} a ${page_end} de ${pluralize(count: count, singular: "registro")}</div>"
+        writer << '</div>'
+        writer << '<div class="col-sm-6 dataTables_paginate">'
+        writer << g.paginate(total: count)
+        writer << '</div>'
+        writer << '</div>'
+        writer << '</div>'
+    }
+
+    def pluralize = { attrs, body ->
+        def plural = attrs['plural'] ?: attrs['singular'] + "s"
+        out < 1 ? plural : attrs['singular'] )
+    }
+}
+```
+
+PD : Seguramente exista forma de sacar el nombre de columna desde el nombre del atributo del modelo, pero todavía no lo encontré.
+
+Para usarlo simplemente basta con agregar en nuestro template :
+
+```
+<div class="row">
+    <div class="col-lg-12">
+
+    </div>
+
+    <!-- /.col-lg-12 -->
+</div>
+```
